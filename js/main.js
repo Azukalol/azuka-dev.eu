@@ -38,7 +38,7 @@
   /* creep toward 96 while the model streams in; finishBoot waits on the scene */
   function crawl() {
     targetPct = Math.min(96, targetPct + 6);
-    if (targetPct < 96) setTimeout(crawl, reduce ? 30 : 90);
+    if (targetPct < 96) setTimeout(crawl, 90);
     else finishBoot();
   }
 
@@ -59,14 +59,14 @@
         if (boot) boot.classList.add('is-done');
         document.body.classList.remove('is-booting');
         document.body.classList.add('is-lit');
-      }, reduce ? 60 : 420);
+      }, 420);
     }
     SK.onReady(release);
     setTimeout(release, 9000);
   }
 
   requestAnimationFrame(tickPct);
-  setTimeout(crawl, reduce ? 0 : 200);
+  setTimeout(crawl, 200);
 
   /* terminal-style boot log — lines decrypt in one by one while the bar fills */
   var bootLog = document.getElementById('bootLog');
@@ -81,7 +81,7 @@
   ];
   var logIdx = 0;
   function bootLogLine() {
-    if (!bootLog || logIdx >= LOG_LINES.length || bootDone) return;
+    if (!bootLog || logIdx >= LOG_LINES.length) return;
     var d = document.createElement('div');
     d.textContent = '> ' + LOG_LINES[logIdx];
     bootLog.appendChild(d);
@@ -89,7 +89,7 @@
     logIdx++;
     if (logIdx < LOG_LINES.length) setTimeout(bootLogLine, 380);
   }
-  if (bootLog && !reduce) setTimeout(bootLogLine, 300);
+  if (bootLog) setTimeout(bootLogLine, 300);
 
   /* ---------------------------------------------------------- */
   /* AUDIO — on by default, remembered per session                */
@@ -440,7 +440,7 @@
   /* ---------------------------------------------------------- */
   var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#*+<>/\\|;:!?$%&@';
   function scramble(el) {
-    if (reduce || !el || !el.textContent) return;
+    if (!el || !el.textContent) return;
     var final = el.textContent, len = final.length;
     if (!len) return;
     var frame = 0, total = 20;
@@ -517,15 +517,13 @@
       cx = e.clientX; cy = e.clientY;
       cur.classList.add('is-on');
       cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
-      if (!reduce) {
-        var dist = Math.abs(cx - px) + Math.abs(cy - py);
-        var now = performance.now();
-        if (dist > 22 && now - lastSpark > 70) {
-          lastSpark = now;
-          spawnSpark(cx, cy, dist * 0.7);
-        }
-        px = cx; py = cy;
+      var dist = Math.abs(cx - px) + Math.abs(cy - py);
+      var now = performance.now();
+      if (dist > 22 && now - lastSpark > 70) {
+        lastSpark = now;
+        spawnSpark(cx, cy, dist * 0.7);
       }
+      px = cx; py = cy;
     }, { passive: true });
     window.addEventListener('pointerdown', function () { cur.classList.add('is-down'); });
     window.addEventListener('pointerup', function () { cur.classList.remove('is-down'); });
@@ -565,7 +563,7 @@
   /* ---------------------------------------------------------- */
   /* CLICK RIPPLE — a small ring pulses out from every click.     */
   /* ---------------------------------------------------------- */
-  if (fine && !reduce) {
+  if (fine) {
     document.addEventListener('pointerdown', function (e) {
       if (e.pointerType === 'touch') return;
       var r = document.createElement('i');
@@ -615,12 +613,75 @@
   /* AMBIENT GLITCH TICK — the page jolts for a frame every so    */
   /* often, so it never quite looks still.                        */
   /* ---------------------------------------------------------- */
-  if (!reduce) {
-    setInterval(function () {
-      if (document.hidden) return;
-      document.body.classList.add('g-tick');
-      setTimeout(function () { document.body.classList.remove('g-tick'); }, 240);
-    }, 15000);
+  setInterval(function () {
+    if (document.hidden) return;
+    document.body.classList.add('g-tick');
+    setTimeout(function () { document.body.classList.remove('g-tick'); }, 240);
+  }, 15000);
+
+  /* ---------------------------------------------------------- */
+  /* CONTACT SHEET — smooth drawer, no database. Submitting       */
+  /* opens WhatsApp with the message prefilled (wa.me deep link)  */
+  /* and emails a copy through FormSubmit's AJAX endpoint.        */
+  /* ---------------------------------------------------------- */
+  var cta = document.getElementById('ctaOpen');
+  var sheet = document.getElementById('sheet');
+  var dim = document.getElementById('dim');
+  var sheetClose = document.getElementById('sheetClose');
+  var sheetForm = document.getElementById('contactForm');
+  var sheetOk = document.getElementById('sheetOk');
+  /* TODO: replace with the real WhatsApp number — international format,
+     digits only, no "+" and no spaces. */
+  var WHATSAPP_NR = '491234567890';
+
+  function openSheet() {
+    if (!sheet || !dim) return;
+    sheet.classList.add('is-open');
+    dim.classList.add('is-on');
+    sheet.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('is-sheet');
+  }
+  function closeSheet() {
+    if (!sheet || !dim) return;
+    sheet.classList.remove('is-open');
+    dim.classList.remove('is-on');
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('is-sheet');
+  }
+  if (cta) cta.addEventListener('click', openSheet);
+  if (sheetClose) sheetClose.addEventListener('click', closeSheet);
+  if (dim) dim.addEventListener('click', closeSheet);
+  window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+  if (sheetForm) {
+    sheetForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd = new FormData(sheetForm);
+      var name = String(fd.get('name') || '').trim();
+      var zweck = String(fd.get('zweck') || '').trim();
+      var email = String(fd.get('email') || '').trim();
+      var datum = String(fd.get('datum') || '').trim();
+      var msg = 'AZUKA CONTACT\n\nname: ' + name + '\nzweck: ' + zweck + '\nemail: ' + email + '\ndatum: ' + datum;
+      window.open('https://wa.me/' + WHATSAPP_NR + '?text=' + encodeURIComponent(msg), '_blank');
+      try {
+        fetch('https://formsubmit.co/ajax/azukakun8@gmail.com', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            _subject: 'azuka contact — ' + zweck,
+            name: name, email: email, datum: datum, message: msg
+          })
+        }).catch(function () {});
+      } catch (err) {}
+      sheetForm.classList.add('is-gone');
+      sheetOk.hidden = false;
+      setTimeout(function () {
+        closeSheet();
+        sheetForm.reset();
+        sheetForm.classList.remove('is-gone');
+        sheetOk.hidden = true;
+      }, 4200);
+    });
   }
 
   /* ---------------------------------------------------------- */
@@ -630,7 +691,7 @@
   var eggKey = '';
   window.addEventListener('keydown', function (e) {
     eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
-    if (eggKey === 'azuka' && !reduce) {
+    if (eggKey === 'azuka') {
       eggKey = '';
       document.body.classList.add('g-egg');
       var ex = window.innerWidth / 2, ey = window.innerHeight / 3;
