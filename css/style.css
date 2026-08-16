@@ -282,7 +282,7 @@ body.is-invert .boot{--el-inv:1}
   left:50%;top:52%;transform:translate(-50%,var(--ty,0)) rotate(-8deg);
   font-size:18cqw;font-style:italic;white-space:nowrap;z-index:3;
   color:transparent;-webkit-text-stroke:1px color-mix(in srgb,var(--on-dark) 26%,transparent);
-  letter-spacing:-.02em;pointer-events:none;user-select:none;
+  letter-spacing:-.02em;user-select:none;
 }
 /* the name — solid black fill with a white outline, so it reads cleanly over
    the white die, with thin white ghosts glitching behind it */
@@ -403,7 +403,7 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .lay--bio{
   left:50%;top:38%;width:44%;margin-left:-22%;
   font-size:1.78cqw;line-height:1.3;letter-spacing:0;
-  text-align:justify;text-justify:inter-word;hyphens:auto;
+  text-align:justify;text-justify:inter-word;
 }
 .lay--bio p{margin:0}
 .lay--bio p+p{margin-top:.15em}
@@ -622,9 +622,6 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   .lay--icons a,.ctl__b{transition:none}
   .lay--icons svg{transition:none}
   .lay--abouth,.lay--contact,.lay--me,.lay--bio,.lay--meta,.lay--water,.hl{transition:none}
-  .lay--abouth:hover,.lay--meta:hover{transform:translateX(-50%)}
-  .lay--contact:hover,.lay--me:hover,.lay--bio:hover,.hl:hover{transform:none}
-  .lay--water:hover{transform:translateX(-50%) rotate(-8deg)}
   .badge svg,.badge i,.spk,.meta__caret{animation:none !important}
   .frame__scan{display:none}
   .badge,.spk,.meta__caret{opacity:.9}

@@ -900,23 +900,24 @@ function init() {
     const dt = Math.min(0.05, clock.getDelta());
     const t = clock.elapsedTime;
 
-    if (!inView) return;
-
-    /* The machine turns on a slow turntable from the very first frame, so it
-       never sits dead-front. The cursor takes over while dragging, and once
-       released it keeps turning from wherever the drag left it — no springing
-       back to square-on. */
+    /* The machine turns on a slow turntable from the very first frame — the
+       angle keeps accumulating even while the section is off-screen, so the
+       moment you scroll to it it is already gliding. The cursor takes over
+       while dragging, and once released it keeps turning from wherever the
+       drag left it — no springing back to square-on. */
     spinVY *= 0.90; spinVX *= 0.90;
     spinY += spinVY; spinX += spinVX;
     spinX = Math.max(-0.55, Math.min(0.55, spinX));
     if (!dragging) {
-      if (!reduce) spinY += 0.05 * dt;
+      spinY += 0.08 * dt;
       spinX += (0 - spinX) * Math.min(1, dt * 3.2);
       if (Math.abs(spinX) < 0.0008) spinX = 0;
     }
 
     root.rotation.y = spinY;
     root.rotation.x = spinX;
+
+    if (!inView) return;
 
     /* power + tear */
     powerT += (powerTarget - powerT) * Math.min(1, dt * 2.4);
