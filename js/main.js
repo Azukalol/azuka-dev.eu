@@ -681,18 +681,30 @@
   }
 
   /* ---------------------------------------------------------- */
-  /* EASTER EGG — type "azuka" and the page glitches out in a     */
-  /* burst of glyphs.                                             */
+  /* EASTER EGG — type "azuka" anywhere and the page detonates    */
+  /* into a glyph burst. Listened for in the CAPTURE phase on     */
+  /* document so no focused element can swallow the keystrokes,   */
+  /* and typing inside form fields is ignored on purpose.         */
   /* ---------------------------------------------------------- */
   var eggKey = '';
-  window.addEventListener('keydown', function (e) {
-    eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
-    if (eggKey === 'azuka') {
-      eggKey = '';
-      document.body.classList.add('g-egg');
-      var ex = window.innerWidth / 2, ey = window.innerHeight / 3;
-      for (var i = 0; i < 26; i++) spawnSpark(ex + (Math.random() - 0.5) * 240, ey + (Math.random() - 0.5) * 160, 26);
-      setTimeout(function () { document.body.classList.remove('g-egg'); }, 900);
+  var eggFlash = document.getElementById('eggFlash');
+  function doEgg() {
+    eggKey = '';
+    document.body.classList.add('g-egg');
+    var ex = window.innerWidth / 2, ey = window.innerHeight / 3;
+    for (var i = 0; i < 42; i++) spawnSpark(ex + (Math.random() - 0.5) * 340, ey + (Math.random() - 0.5) * 240, 30);
+    if (eggFlash) {
+      eggFlash.classList.remove('is-go');
+      void eggFlash.offsetWidth;   /* force a reflow so the animation restarts */
+      eggFlash.classList.add('is-go');
     }
-  });
+    setTimeout(function () { document.body.classList.remove('g-egg'); }, 950);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (!e.key || e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
+    if (eggKey === 'azuka') doEgg();
+  }, true);
 })();

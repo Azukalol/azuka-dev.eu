@@ -655,6 +655,29 @@ body.g-egg main{animation:eggglitch .85s steps(5) both}
   80%{transform:translateX(3px) skewX(.8deg)}
   100%{transform:none;opacity:1}
 }
+/* the unmissable half — a fullscreen AZUKA glyph that burns across the page
+   on top of the main-jolt. JS restarts it by toggling .is-go. */
+.eggflash{
+  position:fixed;inset:0;z-index:120;display:grid;place-items:center;
+  pointer-events:none;opacity:0;visibility:hidden;
+  font-family:var(--f-vcr);letter-spacing:.1em;
+}
+.eggflash.is-go{animation:eggburn .95s steps(6) both}
+.eggflash b{
+  font-size:clamp(3.5rem,16vw,13rem);font-weight:700;
+  color:#000;mix-blend-mode:difference;
+  text-shadow:0 0 34px rgba(255,255,255,.55),0 0 90px rgba(255,255,255,.25);
+}
+body.is-invert .eggflash b{color:#fff}
+@keyframes eggburn{
+  0%{opacity:0;transform:scale(1.25) skewX(0);visibility:visible}
+  10%{opacity:1;transform:scale(1) skewX(-5deg)}
+  28%{opacity:.35;transform:translateX(-16px) skewX(4deg)}
+  46%{opacity:1;transform:translateX(12px) skewX(-3deg)}
+  64%{opacity:.4;transform:translateX(-7px) skewX(2deg)}
+  82%{opacity:.8;transform:translateX(4px) skewX(-1deg)}
+  100%{opacity:0;transform:scale(1.08) skewX(0);visibility:hidden}
+}
 
 /* ============ CTA + CONTACT SHEET — the get-in-touch button unfolds a smooth
    drawer with a no-database form. Submission emails the request to the owner
