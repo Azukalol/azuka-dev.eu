@@ -1,7 +1,7 @@
 /* ============================================================
    WORKS — the archive loaded into the machine.
 
-   Order is Akif's, not by play count. The OPRAPTI short film sits LAST;
+   Order is Azuka's, not by play count. The OPRAPTI short film sits LAST;
    everything before it is a reel.
 
    `vid`      a 6s muted loop shown on the PSP screen, trimmed from 0.5s so no
@@ -51,7 +51,7 @@ window.SK_WORKS = [
   {
     id: 'DU6DxLykpcI',
     title: 'BABYDOLL',
-    sub: 'Dir. shutterkif · DOP Angan Sarker',
+    sub: 'Dir. Azuka · DOP Angan Sarker',
     kind: 'REEL',
     year: '2026',
     meta: 'REEL · 28K PLAYS · INSTAGRAM',
@@ -111,7 +111,7 @@ window.SK_WORKS = [
   {
     id: 'oprapti',
     title: 'OPRAPTI',
-    sub: 'অপ্রাপ্তি — A Story By Kazi Ahnaf Akif',
+    sub: 'অপ্রাপ্তি — A Story By Azuka',
     kind: 'SHORT FILM',
     year: '2026',
     meta: 'SHORT FILM · DIR. AHNAF AKIF · 2026',

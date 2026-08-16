@@ -245,7 +245,7 @@
   var DEPTH = {
     'el--star-a': 0.16, 'el--star-b': -0.13, 'el--dice': 0.07,
     'el--cd-a': 0.15, 'el--cd-b': -0.12, 'el--cards': 0.08,
-    'lay--shutter': -0.05, 'lay--kif': 0.05,
+    'lay--azuka': 0.04,
     'lay--abouth': -0.04, 'lay--bio': 0.035,
     'lay--contact': -0.05, 'lay--me': 0.05, 'lay--icons': 0.03
   };

@@ -1,5 +1,5 @@
 /* ============================================================
-   shutter kif. — black & white, gritty, minimal
+   azuka. — black & white, gritty, minimal
    Composed sections sit on a 16:9 stage carrying the exact PSD
    coordinates in percent.
    ============================================================ */
@@ -178,8 +178,7 @@ body.is-invert .boot{--el-inv:1}
 @keyframes spin-cw {to{--spin:360deg}}
 @keyframes spin-ccw{to{--spin:-360deg}}
 .el--dice  {left:32.45%;top:19.26%;width:35.10%}
-.lay--shutter{left:28.33%;top:43.0%;font-size:4cqw;font-style:italic}
-.lay--kif    {left:59.84%;top:43.0%;font-size:4cqw;font-style:italic}
+.lay--azuka{left:50%;top:43.0%;transform:translate(-50%,var(--ty,0));font-size:4cqw;font-style:italic;white-space:nowrap}
 
 .cue{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:6;padding:.6rem}
 .cue i{display:block;width:1px;height:34px;background:currentColor;opacity:.3;position:relative;overflow:hidden}
@@ -333,12 +332,10 @@ kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opaci
      `cqw` and not `vw`: if the stage ever stops being exactly the viewport,
      the type still scales with the composition instead of drifting out of it. */
 
-  /* 01 front — one word, "shutterkif.", sitting under the dice.
-     The two halves are separate elements and always will be (the copy is
-     frozen), so they are butted against the stage's centre line instead:
-     `shutter` ends exactly at 50%, `kif.` starts exactly at 50%. They meet
-     perfectly as one centred word without anything needing to know how wide
-     the text renders — no font metrics, no magic numbers, no drift when the
+  /* 01 front — one word, "azuka", sitting under the dice.
+     Centred against the stage's centre line: a single `translate(-50%)`
+     keeps it dead-centre under the dice no matter how wide the text
+     renders — no font metrics, no magic numbers, no drift when the
      webfont swaps in. */
   .el--star-a{left:44%;top:2%;width:64%;height:auto}
   .el--star-b{left:-24%;top:66%;width:98%;height:auto}
@@ -346,9 +343,7 @@ kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opaci
      of the screen on every phone — width-sized art moves vertically as the
      aspect changes, which is what put the type on top of it */
   .el--dice{width:auto;height:32cqh;left:calc(50cqw - 16.24cqh);top:20cqh}
-  .lay--shutter,.lay--kif{top:57cqh;font-size:11cqw;white-space:nowrap}
-  .lay--shutter{left:auto;right:50%;text-align:right}
-  .lay--kif    {left:50%;right:auto;text-align:left}
+  .lay--azuka{top:57cqh;font-size:11cqw;left:50%;transform:translate(-50%,var(--ty,0));white-space:nowrap}
 
   /* 03 about */
   .lay--abouth{left:50%;top:14%;transform:translate(-50%,var(--ty,0));font-size:7.5cqw}
