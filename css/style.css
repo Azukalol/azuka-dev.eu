@@ -740,15 +740,17 @@ body.is-invert .sheet__form input[type=date]{color-scheme:light}
 .sheet__form.is-gone{display:none}
 
 /* ============ SYSTEM TERMINAL + SECRETS COUNTER ============ */
+/* A single status column top-left, stacked under the chrono:  */
+/* time / hits / secrets / sys — nothing ever overlaps.        */
 .sys{
-  position:fixed;right:var(--gutter);top:var(--gutter);z-index:96;
-  font-family:var(--f-vcr);font-size:.6rem;letter-spacing:.18em;line-height:1.8;
-  color:#fff;mix-blend-mode:difference;opacity:.85;text-align:right;white-space:pre;
+  position:fixed;left:calc(var(--gutter) + 1.3rem);top:calc(var(--gutter) + 6.2rem);z-index:96;
+  font-family:var(--f-vcr);font-size:.6rem;letter-spacing:.18em;line-height:1.9;
+  color:color-mix(in srgb,var(--on-dark) 42%,transparent);text-align:left;white-space:pre;pointer-events:none;
 }
 .secrets{
-  position:fixed;left:var(--gutter);top:calc(var(--gutter) + 2.4rem);z-index:90;
-  font-family:var(--f-vcr);font-size:.6rem;letter-spacing:.22em;color:#fff;
-  mix-blend-mode:difference;opacity:.55;
+  position:fixed;left:calc(var(--gutter) + 1.3rem);top:calc(var(--gutter) + 3.7rem);z-index:90;
+  font-family:var(--f-vcr);font-size:.6rem;letter-spacing:.22em;color:color-mix(in srgb,var(--on-dark) 55%,transparent);
+  pointer-events:none;
 }
 
 /* ============ CRT POWER-ON — after boot the screen snaps on ============ */
