@@ -707,4 +707,18 @@
     eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
     if (eggKey === 'azuka') doEgg();
   }, true);
+
+  /* keyboard focus can be stolen by DevTools or another window, so the same
+     egg also fires on three quick clicks on the AZUKA title — works with
+     mouse AND touch no matter what has focus. */
+  var eggTitle = document.querySelector('.lay--azuka');
+  var eggClicks = 0, eggClickTimer = null;
+  if (eggTitle) {
+    eggTitle.addEventListener('click', function () {
+      eggClicks++;
+      if (eggClickTimer) clearTimeout(eggClickTimer);
+      eggClickTimer = setTimeout(function () { eggClicks = 0; }, 700);
+      if (eggClicks >= 3) { eggClicks = 0; doEgg(); }
+    });
+  }
 })();
