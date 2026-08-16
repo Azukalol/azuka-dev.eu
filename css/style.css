@@ -422,13 +422,14 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .lay--contact{left:23.54%;top:40.0%;font-size:3.78cqw}
 .lay--me     {left:64.27%;top:40.0%;font-size:3.78cqw}
 .lay--icons{left:45.94%;top:89.7%;display:flex;align-items:center;gap:1.4%}
-.lay--icons img{width:100%;height:100%;object-fit:contain;transition:transform .4s var(--ease)}
+.lay--icons svg{width:100%;height:100%;display:block;transition:transform .4s var(--ease)}
 .lay--icons a:first-child{width:3.70cqw}
 .lay--icons a:last-child{width:3.02cqw}
-/* redesigned as glowing contact medallions — a thin ring around each mark,
-   with a soft halo resting on the paper and a brighter bloom on hover */
+/* redesigned as glowing contact medallions — a thin ring around each freshly
+   drawn mark, with a soft halo resting on the paper and a brighter bloom on hover */
 .lay--icons a{
   position:relative;display:grid;place-items:center;aspect-ratio:1;
+  color:var(--on-dark);
   border:1px solid color-mix(in srgb,var(--on-dark) 38%,transparent);
   border-radius:50%;padding:19%;
   background:color-mix(in srgb,var(--on-dark) 5%,transparent);
@@ -446,8 +447,7 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
     inset 0 0 18px color-mix(in srgb,var(--on-dark) 16%,transparent);
 }
 .lay--icons a:active{transform:translateY(-2px) scale(1.05)}
-.lay--icons a:hover img{transform:scale(1.1)}
-.icons__ig,body.is-invert .icons__ig{filter:none}   /* the IG mark keeps its colour */
+.lay--icons a:hover svg{transform:scale(1.12)}
 
 /* chrome gradient fills — headings and highlighted words. Grey so the
    invert can still flip the whole paper night/day. */
@@ -475,6 +475,20 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .ctl__b,.ctl__vol{box-shadow:0 0 12px rgba(255,255,255,.10)}
 .ctl__vol:hover{box-shadow:0 0 18px rgba(255,255,255,.22)}
 .hero .badge{filter:drop-shadow(0 0 10px rgba(255,255,255,.25))}
+
+/* ============ HOVER GROW ============
+   Text layers swell slightly when the cursor touches them, on top of their
+   parallax transform. transform-only, so the glow filters stay put. */
+.lay--abouth,.lay--contact,.lay--me,.lay--bio,.lay--meta,.lay--water,.hl{
+  transition:transform .5s var(--ease),filter .5s var(--ease);
+}
+.lay--abouth:hover{transform:translate(-50%,var(--ty,0)) scale(1.06)}
+.lay--contact:hover,.lay--me:hover{transform:translateY(var(--ty,0)) scale(1.06)}
+.lay--bio:hover{transform:translateY(var(--ty,0)) scale(1.03)}
+.lay--meta:hover{transform:translate(-50%,var(--ty,0)) scale(1.05)}
+.lay--water:hover{transform:translate(-50%,var(--ty,0)) rotate(-8deg) scale(1.04)}
+.hl{display:inline-block}
+.hl:hover{transform:scale(1.1)}
 
 /* ============ MOTION ============
    Nothing here is a page transition — each piece drifts at its own rate as you
@@ -606,6 +620,11 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   .ctl__music::before,.music__eq i,.lay--azuka,.lay--azuka::before,.lay--azuka::after,.azuka__in{animation:none !important}
   .lay--azuka{text-shadow:none;filter:none}
   .lay--icons a,.ctl__b{transition:none}
+  .lay--icons svg{transition:none}
+  .lay--abouth,.lay--contact,.lay--me,.lay--bio,.lay--meta,.lay--water,.hl{transition:none}
+  .lay--abouth:hover,.lay--meta:hover{transform:translateX(-50%)}
+  .lay--contact:hover,.lay--me:hover,.lay--bio:hover,.hl:hover{transform:none}
+  .lay--water:hover{transform:translateX(-50%) rotate(-8deg)}
   .badge svg,.badge i,.spk,.meta__caret{animation:none !important}
   .frame__scan{display:none}
   .badge,.spk,.meta__caret{opacity:.9}

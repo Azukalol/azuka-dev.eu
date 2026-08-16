@@ -902,16 +902,16 @@ function init() {
 
     if (!inView) return;
 
-    /* No entrance animation. The machine is centred and square-on from the
-       first frame; the only rotation that ever exists is the user's own drag,
-       which springs back to dead-front. */
+    /* The machine turns on a slow turntable from the very first frame, so it
+       never sits dead-front. The cursor takes over while dragging, and once
+       released it keeps turning from wherever the drag left it — no springing
+       back to square-on. */
     spinVY *= 0.90; spinVX *= 0.90;
     spinY += spinVY; spinX += spinVX;
     spinX = Math.max(-0.55, Math.min(0.55, spinX));
     if (!dragging) {
-      spinY += (0 - spinY) * Math.min(1, dt * 3.2);
+      if (!reduce) spinY += 0.05 * dt;
       spinX += (0 - spinX) * Math.min(1, dt * 3.2);
-      if (Math.abs(spinY) < 0.0008) spinY = 0;
       if (Math.abs(spinX) < 0.0008) spinX = 0;
     }
 
