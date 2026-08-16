@@ -92,8 +92,15 @@
   /* ---------------------------------------------------------- */
   var audio = document.getElementById('bgAudio');
   var btn = document.getElementById('soundToggle');
+  var vol = document.getElementById('volSlider');
   var wanted = false, fadeTimer = null, audible = false;
-  var VOL = 0.42;
+
+  /* volume comes from the slider, remembered across visits */
+  function getVol() {
+    var v = vol ? parseFloat(vol.value) : 42;
+    if (isNaN(v)) v = 42;
+    return Math.max(0, Math.min(1, v / 100));
+  }
 
   function fadeTo(target, done) {
     if (!audio) return;
@@ -144,7 +151,7 @@
     var p;
     try { p = audio.play(); } catch (e) { p = null; }
     var settle = function (ok) { inFlight = null; return ok; };
-    var win = function () { audible = true; fadeTo(VOL); return settle(true); };
+    var win = function () { audible = true; fadeTo(getVol()); return settle(true); };
     var lose = function () {
       /* unmuting without activation makes Chrome pause it — put it back */
       audio.muted = wasMuted;
@@ -191,6 +198,27 @@
 
   if (btn) btn.addEventListener('click', function () { setSound(!wanted); });
 
+  /* the volume slider drives the volume live; dragging it up also turns the
+     sound on, dragging to zero mutes and parks the track */
+  if (vol) {
+    vol.addEventListener('input', function () {
+      var v = getVol();
+      try { localStorage.setItem('sk_vol', String(Math.round(v * 100))); } catch (e) {}
+      if (!audio) return;
+      if (v > 0) {
+        audio.volume = v;
+        wanted = true;
+        reflect();
+        goAudible().then(function (ok) { if (!ok) { rollSilently(); arm(); } });
+      } else {
+        wanted = false;
+        reflect();
+        disarm();
+        fadeTo(0, function () { audio.pause(); });
+      }
+    });
+  }
+
   // pause when the tab is hidden, resume if it was wanted
   document.addEventListener('visibilitychange', function () {
     if (!audio) return;
@@ -200,6 +228,8 @@
 
   var soundOnByDefault = true;
   try { if (sessionStorage.getItem('sk_sound') === '0') soundOnByDefault = false; } catch (e) {}
+  /* restore the remembered volume, then play straight away if allowed */
+  try { if (vol && localStorage.getItem('sk_vol')) vol.value = localStorage.getItem('sk_vol'); } catch (e) {}
 
   if (audio && soundOnByDefault) {
     wanted = true;
