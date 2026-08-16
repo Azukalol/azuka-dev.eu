@@ -9,11 +9,19 @@
 <meta property="og:image" content="assets/works/work0.jpg" />
 <meta name="theme-color" content="#ffffff" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23fff'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial' font-size='20' font-style='italic' text-anchor='middle' fill='%23000'%3Ea%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/style.css?v=3" />
 </head>
 <body class="is-booting">
 
 <div class="backdrop" aria-hidden="true"></div>
+
+<div class="hud" aria-hidden="true">
+  <span class="hud__os">azuka&nbsp;os</span>
+  <span class="hud__tick"><b>
+    <i>film ✦ direction ✦ photography ✦ videography ✦ education ✦ </i><i>film ✦ direction ✦ photography ✦ videography ✦ education ✦ </i>
+  </b></span>
+  <span class="hud__loc">dhaka,&nbsp;bd</span>
+</div>
 
 <div id="boot" class="boot" role="status" aria-label="Loading">
   <img src="assets/el/swag.png" alt="" class="boot__img" />
@@ -40,6 +48,17 @@
     <img src="assets/el/star-b.png" alt="" class="el el--star-b" aria-hidden="true" />
     <img src="assets/el/dice.png" alt="" class="el el--dice" aria-hidden="true" />
     <h1 class="lay lay--azuka" data-text="azuka"><span class="azuka__in">azuka</span></h1>
+    <p class="lay lay--meta">film · direction · dhaka<span class="meta__caret" aria-hidden="true"></span></p>
+    <div class="badge" aria-hidden="true">
+      <svg viewBox="0 0 120 120">
+        <defs><path id="badgePath" d="M60,60 m-46,0 a46,46 0 1,1 92,0 a46,46 0 1,1 -92,0"/></defs>
+        <text><textPath href="#badgePath">DIRECTOR ✦ FILMMAKER ✦ STORYTELLER ✦&nbsp;</textPath></text>
+      </svg>
+      <i>✦</i>
+    </div>
+    <i class="spk spk--1" aria-hidden="true">✦</i>
+    <i class="spk spk--2" aria-hidden="true">✦</i>
+    <i class="spk spk--3" aria-hidden="true">✦</i>
   </div>
   <a class="cue" href="#work" data-nav aria-label="Scroll to work"><i></i></a>
 </section>
@@ -67,8 +86,8 @@
     <img src="assets/el/cd-b.png" alt="" class="el el--cd-b" aria-hidden="true" />
     <h2 class="lay lay--abouth">About me</h2>
     <div class="lay lay--bio">
-      <p>I'm Azuka — a filmmaker, visual storyteller, and educator based in Dhaka, Bangladesh.</p>
-      <p>What started as a curiosity for the camera grew into a career spanning photography, videography, and social media content creation, accumulating quite a lot of views across projects. That foundation sharpened my eye for visual storytelling — and today, I channel it into short narrative films, music videos, and commercial productions where craft and intention drive every frame.</p>
+      <p>I'm Azuka — a <em class="hl">filmmaker</em>, visual storyteller, and educator based in Dhaka, Bangladesh.</p>
+      <p>What started as a curiosity for the camera grew into a career spanning photography, videography, and social media content creation, accumulating quite a lot of views across projects. That foundation sharpened my eye for <em class="hl">visual storytelling</em> — and today, I channel it into short narrative films, <em class="hl">music videos</em>, and <em class="hl">commercial productions</em> where craft and intention drive every frame.</p>
     </div>
   </div>
 </section>
