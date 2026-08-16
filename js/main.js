@@ -630,9 +630,14 @@
   var sheetClose = document.getElementById('sheetClose');
   var sheetForm = document.getElementById('contactForm');
   var sheetOk = document.getElementById('sheetOk');
-  /* TODO: replace with the real WhatsApp number — international format,
-     digits only, no "+" and no spaces. */
-  var WHATSAPP_NR = '491234567890';
+  /* the number stays out of plain sight — hex-encoded and decoded at runtime,
+     so view-source and the Elements panel never show the digits */
+  function dehex(s) {
+    var o = '';
+    for (var i = 0; i < s.length; i += 2) o += String.fromCharCode(parseInt(s.substr(i, 2), 16));
+    return o;
+  }
+  var WHATSAPP_NR = dehex('34393135323235343838373237');
 
   function openSheet() {
     if (!sheet || !dim) return;
