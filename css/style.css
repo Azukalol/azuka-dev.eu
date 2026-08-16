@@ -291,6 +291,7 @@ body.is-invert .boot{--el-inv:1}
   font-size:6.4cqw;font-style:italic;white-space:nowrap;letter-spacing:.02em;
   color:#000;-webkit-text-fill-color:#000;
   -webkit-text-stroke:2px rgba(255,255,255,.85);
+  filter:drop-shadow(0 0 10px rgba(255,255,255,.20));
   transition:filter .45s var(--ease);
 }
 .lay--azuka:hover{filter:drop-shadow(0 0 14px rgba(255,255,255,.35));animation:azka-jit .13s steps(2) infinite}
@@ -420,14 +421,32 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .el--cards{left:26.67%;top:-3.52%;width:46.67%}
 .lay--contact{left:23.54%;top:40.0%;font-size:3.78cqw}
 .lay--me     {left:64.27%;top:40.0%;font-size:3.78cqw}
-.lay--icons{left:45.94%;top:89.7%;display:flex;align-items:center;gap:1.1%}
-.lay--icons img{width:100%;transition:transform .4s var(--ease)}
+.lay--icons{left:45.94%;top:89.7%;display:flex;align-items:center;gap:1.4%}
+.lay--icons img{width:100%;height:100%;object-fit:contain;transition:transform .4s var(--ease)}
 .lay--icons a:first-child{width:3.70cqw}
 .lay--icons a:last-child{width:3.02cqw}
-.lay--icons a{position:relative;transition:transform .35s var(--ease),filter .35s}
-.lay--icons a:hover{transform:translateY(-6px) scale(1.15);filter:drop-shadow(0 0 16px color-mix(in srgb,currentColor 55%,transparent))}
+/* redesigned as glowing contact medallions — a thin ring around each mark,
+   with a soft halo resting on the paper and a brighter bloom on hover */
+.lay--icons a{
+  position:relative;display:grid;place-items:center;aspect-ratio:1;
+  border:1px solid color-mix(in srgb,var(--on-dark) 38%,transparent);
+  border-radius:50%;padding:19%;
+  background:color-mix(in srgb,var(--on-dark) 5%,transparent);
+  box-shadow:
+    0 0 16px color-mix(in srgb,var(--on-dark) 16%,transparent),
+    inset 0 0 14px color-mix(in srgb,var(--on-dark) 8%,transparent);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s;
+}
+.lay--icons a:hover{
+  transform:translateY(-6px) scale(1.12);
+  border-color:color-mix(in srgb,var(--on-dark) 78%,transparent);
+  box-shadow:
+    0 0 30px color-mix(in srgb,var(--on-dark) 52%,transparent),
+    0 0 60px color-mix(in srgb,var(--on-dark) 22%,transparent),
+    inset 0 0 18px color-mix(in srgb,var(--on-dark) 16%,transparent);
+}
 .lay--icons a:active{transform:translateY(-2px) scale(1.05)}
-.lay--icons a:hover img{transform:translateY(-4px)}
+.lay--icons a:hover img{transform:scale(1.1)}
 .icons__ig,body.is-invert .icons__ig{filter:none}   /* the IG mark keeps its colour */
 
 /* chrome gradient fills — headings and highlighted words. Grey so the
@@ -438,6 +457,24 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   -webkit-text-fill-color:transparent;color:transparent;
 }
 .hl{font-style:normal}
+
+/* ============ GLOW PASS ============
+   A light bloom on every text and object outside the machine, so the chrome
+   reads softly off the black. Nothing animated — the PSP keeps its own hover
+   glow untouched. drop-shadow (not text-shadow) so gradient-clipped glyphs
+   glow around their true outline instead of filling with the shadow colour. */
+.lay--abouth,.lay--contact,.lay--me{
+  filter:drop-shadow(0 0 14px rgba(255,255,255,.22)) drop-shadow(0 0 34px rgba(255,255,255,.10));
+}
+.lay--bio{filter:drop-shadow(0 0 10px rgba(255,255,255,.08))}
+.lay--bio .hl{filter:drop-shadow(0 0 12px rgba(255,255,255,.30)) drop-shadow(0 0 26px rgba(255,255,255,.12))}
+.lay--meta{filter:drop-shadow(0 0 10px rgba(255,255,255,.35))}
+.lay--water{filter:drop-shadow(0 0 18px rgba(255,255,255,.10))}
+.spine{filter:drop-shadow(0 0 8px rgba(255,255,255,.25))}
+.cue{filter:drop-shadow(0 0 8px rgba(255,255,255,.30))}
+.ctl__b,.ctl__vol{box-shadow:0 0 12px rgba(255,255,255,.10)}
+.ctl__vol:hover{box-shadow:0 0 18px rgba(255,255,255,.22)}
+.hero .badge{filter:drop-shadow(0 0 10px rgba(255,255,255,.25))}
 
 /* ============ MOTION ============
    Nothing here is a page transition — each piece drifts at its own rate as you

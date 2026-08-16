@@ -99,8 +99,8 @@
 
   /* volume comes from the slider, remembered across visits */
   function getVol() {
-    var v = vol ? parseFloat(vol.value) : 42;
-    if (isNaN(v)) v = 42;
+    var v = vol ? parseFloat(vol.value) : 50;
+    if (isNaN(v)) v = 50;
     return Math.max(0, Math.min(1, v / 100));
   }
 
