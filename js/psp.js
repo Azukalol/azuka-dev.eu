@@ -612,6 +612,12 @@ function init() {
       sctx.fillRect(x, SH - 30, w, 3);
     }
 
+    /* the work's title rides on the glass, bottom left */
+    sctx.textAlign = 'left';
+    sctx.font = '22px "VT323", monospace';
+    sctx.fillStyle = 'rgba(230,242,252,.85)';
+    sctx.fillText(String(work.title || '').toUpperCase(), 26, SH - 26);
+
     sctx.restore();
     screenTex.needsUpdate = true;
   }
@@ -746,6 +752,7 @@ function init() {
   let hovered = null;
   let dragging = false, dragged = false, lastX = 0, lastY = 0;
   let spinY = 0, spinX = 0, spinVY = 0, spinVX = 0;
+  SK.spin = () => { spinVY += 8; };
 
   function toNDC(e) {
     const r = canvas.getBoundingClientRect();

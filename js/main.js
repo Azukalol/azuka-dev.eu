@@ -59,6 +59,9 @@
         if (boot) boot.classList.add('is-done');
         document.body.classList.remove('is-booting');
         document.body.classList.add('is-lit');
+        crtFlash();
+        typeHero();
+        armSleep();
       }, 420);
     }
     SK.onReady(release);
@@ -671,6 +674,7 @@
       } catch (err) {}
       sheetForm.classList.add('is-gone');
       sheetOk.hidden = false;
+      toast('SIGNAL TRANSMITTED ✦');
       setTimeout(function () {
         closeSheet();
         sheetForm.reset();
@@ -681,36 +685,221 @@
   }
 
   /* ---------------------------------------------------------- */
-  /* EASTER EGG — type "azuka" anywhere and the page detonates    */
-  /* into a glyph burst. Listened for in the CAPTURE phase on     */
-  /* document so no focused element can swallow the keystrokes,   */
-  /* and typing inside form fields is ignored on purpose.         */
+  /* CRT POWER-ON — after boot the screen snaps on once.          */
   /* ---------------------------------------------------------- */
-  var eggKey = '';
-  var eggFlash = document.getElementById('eggFlash');
-  function doEgg() {
-    eggKey = '';
-    document.body.classList.add('g-egg');
-    var ex = window.innerWidth / 2, ey = window.innerHeight / 3;
-    for (var i = 0; i < 42; i++) spawnSpark(ex + (Math.random() - 0.5) * 340, ey + (Math.random() - 0.5) * 240, 30);
-    if (eggFlash) {
-      eggFlash.classList.remove('is-go');
-      void eggFlash.offsetWidth;   /* force a reflow so the animation restarts */
-      eggFlash.classList.add('is-go');
+  function crtFlash() {
+    document.body.classList.add('is-crt');
+    setTimeout(function () { document.body.classList.remove('is-crt'); }, 700);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* HERO TYPE-IN — "azuka." types itself the moment we go live.  */
+  /* ---------------------------------------------------------- */
+  function typeHero() {
+    var h = document.querySelector('.azuka__in');
+    if (!h) return;
+    var word = 'azuka.', i = 0;
+    h.textContent = '';
+    (function step() {
+      i++;
+      h.textContent = word.slice(0, i);
+      if (i < word.length) setTimeout(step, 90);
+    })();
+  }
+
+  /* ---------------------------------------------------------- */
+  /* SLEEP SCREEN — idle for a while and the machine dozes.       */
+  /* ---------------------------------------------------------- */
+  var sleepT = null;
+  function armSleep() {
+    if (document.body.classList.contains('is-sleep')) return;
+    clearTimeout(sleepT);
+    sleepT = setTimeout(function () { document.body.classList.add('is-sleep'); }, 20000);
+  }
+  function wakeSleep() {
+    if (document.body.classList.contains('is-sleep')) {
+      document.body.classList.remove('is-sleep');
+      crtFlash();
     }
+    armSleep();
+  }
+  ['pointerdown', 'pointermove', 'keydown', 'wheel', 'touchstart'].forEach(function (t) {
+    window.addEventListener(t, wakeSleep, { passive: true });
+  });
+
+  /* ---------------------------------------------------------- */
+  /* WEB-AUDIO BLIPS — tiny generated sounds, no files.           */
+  /* ---------------------------------------------------------- */
+  function beep(freq, dur, type, vol) {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      var ctx = ACtx || new AC();
+      ACtx = ctx;
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || 'square';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(vol || 0.05, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (dur || 0.12));
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + (dur || 0.12) + 0.02);
+      if (ctx.state === 'suspended') ctx.resume().catch(function () {});
+    } catch (e) {}
+  }
+  var lastHov = 0;
+  document.addEventListener('pointerdown', function () { beep(880, 0.05, 'square', 0.04); }, true);
+  document.addEventListener('mouseover', function (e) {
+    var el = e.target;
+    if (!el || !el.closest || !el.closest('a,button,.rail__open,input,label,select')) return;
+    var n = performance.now();
+    if (n - lastHov > 40) { lastHov = n; beep(1320, 0.045, 'square', 0.022); }
+  }, true);
+
+  /* ---------------------------------------------------------- */
+  /* FLASH + BURST — the shared fullscreen glyph and spark play.  */
+  /* ---------------------------------------------------------- */
+  var eggFlash = document.getElementById('eggFlash');
+  function flash(text) {
+    if (!eggFlash) return;
+    eggFlash.querySelector('b').textContent = text;
+    eggFlash.classList.remove('is-go');
+    void eggFlash.offsetWidth;
+    eggFlash.classList.add('is-go');
+  }
+  function burst(x, y, n, spread, power) {
+    for (var i = 0; i < n; i++) spawnSpark(x + (Math.random() - 0.5) * spread, y + (Math.random() - 0.5) * spread * 0.7, power);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* TOAST — transient status line, bottom centre.                */
+  /* ---------------------------------------------------------- */
+  var toastEl = document.getElementById('toast');
+  var toastT = null;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.remove('is-go');
+    void toastEl.offsetWidth;
+    toastEl.classList.add('is-go');
+    clearTimeout(toastT);
+    toastT = setTimeout(function () { toastEl.classList.remove('is-go'); }, 3200);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* SECRET CODES — every word does something. Words shorter than */
+  /* five letters match the instant the buffer ends with them.    */
+  /* ---------------------------------------------------------- */
+  var buf = '';
+  var FOUND = [];
+  try { FOUND = JSON.parse(localStorage.getItem('sk_found')) || []; } catch (e) {}
+  var SECRETS = {
+    azuka: { name: 'the name', fx: doEgg },
+    flip:  { name: 'mirror',     fx: toggleFlip },
+    crash: { name: 'fatal',      fx: doCrash },
+    psp:   { name: 'console',    fx: pspBurst },
+    vcr:   { name: 'playback',   fx: vcrMode },
+    ghost: { name: 'spectre',    fx: ghostMode },
+    y2k:   { name: 'millennium', fx: y2kMode },
+    music: { name: 'synth',      fx: toggleMusic }
+  };
+  function foundSecret(key) {
+    if (FOUND.indexOf(key) === -1) {
+      FOUND.push(key);
+      try { localStorage.setItem('sk_found', JSON.stringify(FOUND)); } catch (e) {}
+    }
+    var se = document.getElementById('secrets');
+    if (se) se.textContent = 'SECRETS ' + FOUND.length + '/' + Object.keys(SECRETS).length;
+  }
+  var se = document.getElementById('secrets');
+  if (se) se.textContent = 'SECRETS ' + FOUND.length + '/' + Object.keys(SECRETS).length;
+
+  function doEgg() {
+    flash('AZUKA');
+    burst(window.innerWidth / 2, window.innerHeight / 3, 42, 340, 30);
+    document.body.classList.add('g-egg');
     setTimeout(function () { document.body.classList.remove('g-egg'); }, 950);
+  }
+  function toggleFlip() {
+    var on = document.documentElement.classList.toggle('is-flip');
+    toast(on ? 'MIRROR ON' : 'MIRROR OFF');
+  }
+  function doCrash() {
+    document.body.classList.add('is-crash');
+    setTimeout(function () {
+      document.body.classList.remove('is-crash');
+      reboot();
+    }, 2600);
+  }
+  function reboot() {
+    document.body.classList.add('is-booting');
+    document.body.classList.remove('is-lit');
+    if (boot) boot.classList.remove('is-done');
+    bootDone = false;
+    pct = 0; targetPct = 0; setPct(0);
+    logIdx = 0;
+    if (bootLog) bootLog.innerHTML = '';
+    setTimeout(crawl, 200);
+  }
+  function pspBurst() {
+    flash('PSP');
+    burst(window.innerWidth / 2, window.innerHeight * 0.42, 30, 260, 24);
+    if (SK.spin) SK.spin();
+  }
+  function vcrMode() {
+    document.body.classList.add('is-vcr');
+    setTimeout(function () { document.body.classList.remove('is-vcr'); }, 1900);
+  }
+  function ghostMode() {
+    document.body.classList.add('is-ghost');
+    setTimeout(function () { document.body.classList.remove('is-ghost'); }, 4000);
+  }
+  function y2kMode() {
+    document.body.classList.add('is-y2k');
+    setTimeout(function () { document.body.classList.remove('is-y2k'); }, 3000);
+  }
+
+  /* synth — "music" turns the keyboard into a pocket instrument */
+  var synthOn = false;
+  var NOTE = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+  function toggleMusic() {
+    synthOn = !synthOn;
+    document.body.classList.toggle('is-music', synthOn);
+    toast(synthOn ? 'SYNTH ON — A..Z ARE NOTES' : 'SYNTH OFF');
+    if (synthOn) beep(523.25, 0.15, 'square', 0.06);
+  }
+
+  /* the master key listener — capture phase, form fields ignored */
+  function dust(x, y) {
+    var s = document.createElement('i');
+    s.className = 'kdust';
+    s.textContent = GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
+    s.style.left = x + 'px';
+    s.style.top = y + 'px';
+    document.body.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
   }
   document.addEventListener('keydown', function (e) {
     if (!e.key || e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
     var t = e.target;
     if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
-    eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
-    if (eggKey === 'azuka') doEgg();
+    var k = e.key.toLowerCase();
+    buf = (buf + k).slice(-5);
+    if (synthOn && /^[a-z]$/.test(k)) {
+      var idx = k.charCodeAt(0) - 97;
+      beep(NOTE[idx % NOTE.length] * (1 + Math.floor(idx / NOTE.length)), 0.16, 'square', 0.045);
+    }
+    dust(20 + Math.random() * 180, 40 + Math.random() * 40);
+    var hit = SECRETS[buf];
+    if (hit) {
+      var hitKey = buf;
+      buf = '';
+      hit.fx();
+      foundSecret(hitKey);
+    }
   }, true);
 
-  /* keyboard focus can be stolen by DevTools or another window, so the same
-     egg also fires on three quick clicks on the AZUKA title — works with
-     mouse AND touch no matter what has focus. */
+  /* three quick clicks on the AZUKA title do the same — keyboards can be
+     focus-stealing, a mouse never is */
   var eggTitle = document.querySelector('.lay--azuka');
   var eggClicks = 0, eggClickTimer = null;
   if (eggTitle) {
@@ -718,7 +907,151 @@
       eggClicks++;
       if (eggClickTimer) clearTimeout(eggClickTimer);
       eggClickTimer = setTimeout(function () { eggClicks = 0; }, 700);
-      if (eggClicks >= 3) { eggClicks = 0; doEgg(); }
+      if (eggClicks >= 3) { eggClicks = 0; doEgg(); foundSecret('azuka'); }
+    });
+  }
+
+  /* ---------------------------------------------------------- */
+  /* RGB SPLIT — the element under the cursor glitches on click.  */
+  /* ---------------------------------------------------------- */
+  document.addEventListener('pointerdown', function (e) {
+    if (e.pointerType === 'touch') return;
+    var el = e.target;
+    if (el && el.closest) {
+      var g = el.closest('.lay,.el,.ctl__b,.cta,.frame,.badge,h1,h2,h3,p');
+      if (g) {
+        g.classList.add('is-glitch');
+        setTimeout(function () { g.classList.remove('is-glitch'); }, 280);
+      }
+    }
+  });
+
+  /* ---------------------------------------------------------- */
+  /* SCROLL RUBBERBAND — fast scroll springs the sections.        */
+  /* ---------------------------------------------------------- */
+  var lastY = window.scrollY, fastT = null;
+  window.addEventListener('scroll', function () {
+    var v = window.scrollY - lastY;
+    lastY = window.scrollY;
+    if (Math.abs(v) > 140) {
+      document.body.classList.add('is-fast');
+      clearTimeout(fastT);
+      fastT = setTimeout(function () { document.body.classList.remove('is-fast'); }, 400);
+    }
+  }, { passive: true });
+
+  /* ---------------------------------------------------------- */
+  /* MAGNETIC BUTTONS — the get-in-touch and sheet close drift    */
+  /* toward the cursor when it comes near.                        */
+  /* ---------------------------------------------------------- */
+  var magnetEls = [].slice.call(document.querySelectorAll('.cta,.sheet__x'));
+  window.addEventListener('pointermove', function (e) {
+    for (var i = 0; i < magnetEls.length; i++) {
+      var m = magnetEls[i];
+      if (!m.isConnected) continue;
+      var r = m.getBoundingClientRect();
+      var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var dx = e.clientX - cx, dy = e.clientY - cy;
+      var d = Math.sqrt(dx * dx + dy * dy);
+      var px = '0px', py = '0px';
+      if (d < 100 && d > 0.1) {
+        var p = (100 - d) / 100;
+        px = (dx / d * p * 7).toFixed(1) + 'px';
+        py = (dy / d * p * 7).toFixed(1) + 'px';
+      }
+      m.style.setProperty('--mx', px);
+      m.style.setProperty('--my', py);
+    }
+  }, { passive: true });
+
+  /* ---------------------------------------------------------- */
+  /* SYSTEM TERMINAL — fps / fake mem / uptime, top right.        */
+  /* ---------------------------------------------------------- */
+  var sysEl = document.getElementById('sys');
+  var up0 = Date.now(), frames = 0, fps = 60, mem = 42;
+  (function sysRaf() { requestAnimationFrame(sysRaf); frames++; })();
+  if (sysEl) {
+    setInterval(function () {
+      fps = fps * 0.9 + frames * 0.1;
+      frames = 0;
+      mem = Math.max(28, Math.min(88, mem + (Math.random() - 0.5) * 6));
+      var s = Math.floor((Date.now() - up0) / 1000);
+      sysEl.textContent = 'SYS ' + Math.round(fps) + 'FPS\nMEM ' + Math.round(mem) + 'MB\nUP ' + pad2(Math.floor(s / 3600)) + ':' + pad2(Math.floor((s % 3600) / 60)) + ':' + pad2(s % 60);
+    }, 1000);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* TAB TITLE — the tab follows the section you are in.          */
+  /* ---------------------------------------------------------- */
+  var TITLES = ['azuka. — film · direction · germany', 'azuka. — the machine', 'azuka. — about', 'azuka. — contact'];
+  function syncTitle() {
+    if (!secs.length) return;
+    var mid = window.scrollY + window.innerHeight * 0.5;
+    for (var i = 0; i < secs.length; i++) {
+      var top = secs[i].offsetTop, bot = top + secs[i].offsetHeight;
+      if (mid >= top && mid < bot) {
+        var want = TITLES[i] || 'azuka.';
+        if (document.title !== want) document.title = want;
+        break;
+      }
+    }
+  }
+  window.addEventListener('scroll', syncTitle, { passive: true });
+  syncTitle();
+
+  /* ---------------------------------------------------------- */
+  /* CONTEXT MENU — the page answers right-click.                 */
+  /* ---------------------------------------------------------- */
+  var ctx = document.getElementById('ctx');
+  document.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    if (!ctx) return;
+    ctx.style.left = Math.min(e.clientX, window.innerWidth - (ctx.offsetWidth || 190) - 8) + 'px';
+    ctx.style.top = Math.min(e.clientY, window.innerHeight - ctx.offsetHeight - 8) + 'px';
+    ctx.hidden = false;
+  });
+  function closeCtx() { if (ctx) ctx.hidden = true; }
+  if (ctx) {
+    ctx.addEventListener('click', function (e) {
+      var b = e.target;
+      if (b && b.dataset && b.dataset.a) {
+        if (b.dataset.a === 'load') { flash('LOADING DISC'); beep(523.25, 0.2, 'square', 0.05); }
+        else if (b.dataset.a === 'coin') { flash('INSERT COIN'); beep(660, 0.2, 'square', 0.05); }
+        else if (b.dataset.a === 'glitch') { vcrMode(); }
+      }
+      closeCtx();
+    });
+  }
+  window.addEventListener('click', closeCtx);
+  window.addEventListener('scroll', closeCtx, { passive: true });
+  window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCtx(); });
+
+  /* ---------------------------------------------------------- */
+  /* SELECTION GLITCH — grabbing text shivers the page.           */
+  /* ---------------------------------------------------------- */
+  var selT = null;
+  document.addEventListener('selectionchange', function () {
+    var s = document.getSelection();
+    if (s && s.toString().length > 0) {
+      document.body.classList.add('is-sel');
+      clearTimeout(selT);
+      selT = setTimeout(function () { document.body.classList.remove('is-sel'); }, 400);
+    }
+  });
+
+  /* ---------------------------------------------------------- */
+  /* CHANNEL DIAL — cycles accent palettes.                       */
+  /* ---------------------------------------------------------- */
+  var chBtn = document.getElementById('chToggle');
+  var CHS = ['', 'cyan', 'pink', 'green', 'amber'];
+  var chIdx = 0;
+  if (chBtn) {
+    chBtn.addEventListener('click', function () {
+      chIdx = (chIdx + 1) % CHS.length;
+      var ch = CHS[chIdx];
+      document.body.setAttribute('data-ch', ch);
+      chBtn.setAttribute('aria-pressed', ch ? 'true' : 'false');
+      toast(ch ? ('CHANNEL ' + ch.toUpperCase()) : 'CHANNEL MONO');
     });
   }
 })();
