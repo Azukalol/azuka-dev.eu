@@ -313,7 +313,7 @@
     'el--cd-a': 0.15, 'el--cd-b': -0.12, 'el--cards': 0.08,
     'lay--azuka': 0.04,
     'lay--abouth': -0.04, 'lay--bio': 0.035,
-    'lay--contact': -0.05, 'lay--me': 0.05, 'lay--icons': 0.03
+    'lay--contact': -0.05, 'lay--me': 0.05
   };
   movers.forEach(function (m) {
     var d = 0;

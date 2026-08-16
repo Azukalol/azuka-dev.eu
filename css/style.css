@@ -113,7 +113,7 @@ body.is-invert .sec--dark {--el-blend:multiply;--el-inv:0}
    Same trick the controls use. */
 :root{--trk:rgba(146,146,146,.42);--trk-hi:rgba(190,190,190,.52)}
 
-.el,.boot__img,.lay--icons img{filter:invert(var(--el-inv));user-select:none;-webkit-user-drag:none}
+.el,.boot__img{filter:invert(var(--el-inv));user-select:none;-webkit-user-drag:none}
 /* max-width:none is load-bearing. The base `img{max-width:100%}` clamps any
    cut-out authored wider than its stage — and when only ONE axis is clamped
    while the other is an explicit length, the aspect ratio breaks and the
@@ -412,9 +412,8 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .lay--bio p+p{margin-top:.15em}
 
 /* ---- 04 contact ---- */
-/* Bottom-aligned, not centred: the comp puts the mail and Instagram marks at
-   89.7% of a 1080-tall canvas, so centring the cover crop ate them. Cropping
-   off the top instead costs nothing — the cards already start above the frame. */
+/* The cards artwork sits flush to the stage bottom. Cropping off the top
+   costs nothing — the cards already start above the frame. */
 .contact{height:100svh;display:grid;place-items:center}
 .contact .stage{background:transparent}
 .contact .stage{
@@ -424,33 +423,6 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
 .el--cards{left:26.67%;top:-3.52%;width:46.67%}
 .lay--contact{left:23.54%;top:40.0%;font-size:3.78cqw}
 .lay--me     {left:64.27%;top:40.0%;font-size:3.78cqw}
-.lay--icons{left:45.94%;top:89.7%;display:flex;align-items:center;gap:1.4%}
-.lay--icons svg{width:100%;height:100%;display:block;transition:transform .4s var(--ease)}
-.lay--icons a:first-child{width:3.70cqw}
-.lay--icons a:last-child{width:3.02cqw}
-/* redesigned as glowing contact medallions — a thin ring around each freshly
-   drawn mark, with a soft halo resting on the paper and a brighter bloom on hover */
-.lay--icons a{
-  position:relative;display:grid;place-items:center;aspect-ratio:1;
-  color:var(--on-dark);
-  border:1px solid color-mix(in srgb,var(--on-dark) 38%,transparent);
-  border-radius:50%;padding:19%;
-  background:color-mix(in srgb,var(--on-dark) 5%,transparent);
-  box-shadow:
-    0 0 16px color-mix(in srgb,var(--on-dark) 16%,transparent),
-    inset 0 0 14px color-mix(in srgb,var(--on-dark) 8%,transparent);
-  transition:transform .35s var(--ease),box-shadow .35s var(--ease),border-color .35s;
-}
-.lay--icons a:hover{
-  transform:translateY(-6px) scale(1.12);
-  border-color:color-mix(in srgb,var(--on-dark) 78%,transparent);
-  box-shadow:
-    0 0 30px color-mix(in srgb,var(--on-dark) 52%,transparent),
-    0 0 60px color-mix(in srgb,var(--on-dark) 22%,transparent),
-    inset 0 0 18px color-mix(in srgb,var(--on-dark) 16%,transparent);
-}
-.lay--icons a:active{transform:translateY(-2px) scale(1.05)}
-.lay--icons a:hover svg{transform:scale(1.12)}
 
 /* chrome gradient fills — headings and highlighted words. Grey so the
    invert can still flip the whole paper night/day. */
@@ -595,9 +567,6 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   .lay--me     {top:73cqh}
   /* centred by the flex box itself, not by a left offset that only happens to
      look centred at one particular width */
-  .lay--icons{left:0;width:100%;justify-content:center;top:82%;gap:5%}
-  .lay--icons a:first-child{width:12cqw}
-  .lay--icons a:last-child {width:9.8cqw}
 
   /* 02 work — behind the machine, aspect preserved, centred in container units
      so it stays centred at any phone aspect. Source is 1248x1152, so
@@ -756,11 +725,10 @@ body.is-invert .sheet__form input[type=date]{color-scheme:light}
   .el.rev,.el.rev.is-shown{opacity:1;filter:invert(var(--el-inv));transition:none}
   .el,.lay{--ty:0 !important}
   [data-rise]{opacity:1;transform:none;filter:none;transition:none}
-  .lay--icons img,.rail__open{transition:none}
+  .rail__open{transition:none}
   .ctl__music::before,.music__eq i,.lay--azuka,.lay--azuka::before,.lay--azuka::after,.azuka__in{animation:none !important}
   .lay--azuka{text-shadow:none;filter:none}
-  .lay--icons a,.ctl__b{transition:none}
-  .lay--icons svg{transition:none}
+  .ctl__b{transition:none}
   .lay--abouth,.lay--contact,.lay--me,.lay--bio,.lay--meta,.lay--water,.hl{transition:none}
   .badge svg,.badge i,.spk,.meta__caret{animation:none !important}
   .frame__scan{display:none}
