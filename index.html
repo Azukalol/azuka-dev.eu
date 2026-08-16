@@ -22,8 +22,13 @@
 </div>
 
 <div class="ctl">
-  <button class="ctl__b" id="invertToggle" aria-pressed="false">invert</button>
-  <button class="ctl__b" id="soundToggle" aria-pressed="false">music on/off</button>
+  <button class="ctl__b ctl__inv" id="invertToggle" aria-pressed="false">
+    <span class="inv__dot" aria-hidden="true"></span><span>invert</span>
+  </button>
+  <button class="ctl__b ctl__music" id="soundToggle" aria-pressed="true" aria-label="Toggle music">
+    <span class="music__eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+    <span class="music__word"><b data-on>playing</b><b data-off>muted</b></span>
+  </button>
 </div>
 
 <main id="top">
@@ -34,7 +39,7 @@
     <img src="assets/el/star-a.png" alt="" class="el el--star-a" aria-hidden="true" />
     <img src="assets/el/star-b.png" alt="" class="el el--star-b" aria-hidden="true" />
     <img src="assets/el/dice.png" alt="" class="el el--dice" aria-hidden="true" />
-    <h1 class="lay lay--azuka">azuka</h1>
+    <h1 class="lay lay--azuka" data-text="azuka"><span class="azuka__in">azuka</span></h1>
   </div>
   <a class="cue" href="#work" data-nav aria-label="Scroll to work"><i></i></a>
 </section>

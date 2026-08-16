@@ -106,18 +106,64 @@ body.is-invert .boot{--el-inv:1}
 /* ============ FIXED CONTROLS ============ */
 .ctl{
   position:fixed;right:var(--gutter);bottom:calc(var(--gutter) - .3rem);z-index:95;
-  display:flex;flex-direction:column;align-items:flex-end;gap:.25rem;
+  display:flex;flex-direction:column;align-items:flex-end;gap:.55rem;
   mix-blend-mode:difference;
   opacity:0;transition:opacity .8s var(--ease) .2s;
 }
 .is-lit .ctl{opacity:1}
 .ctl__b{
-  background:none;border:0;padding:.18rem 0;cursor:pointer;
-  font-family:var(--f);font-size:clamp(.72rem,1vw,.86rem);color:#fff;
-  line-height:1.35;position:relative;
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.42rem .9rem;
+  border:1px solid rgba(255,255,255,.5);border-radius:999px;
+  font-family:var(--f-vcr);font-size:clamp(.62rem,.8vw,.74rem);
+  letter-spacing:.16em;text-transform:uppercase;line-height:1;
+  color:#fff;background:transparent;
+  cursor:pointer;position:relative;
+  transition:transform .25s var(--ease),box-shadow .35s var(--ease),border-color .35s;
 }
-.ctl__b::after{content:'';position:absolute;left:0;right:100%;bottom:.1rem;height:1px;background:currentColor;transition:right .35s var(--ease)}
-.ctl__b:hover::after,.ctl__b[aria-pressed="true"]::after{right:0}
+.ctl__b:hover{transform:translateY(-2px);border-color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.35) inset,0 8px 26px rgba(255,255,255,.18)}
+.ctl__b:active{transform:translateY(0) scale(.96)}
+.ctl__b[aria-pressed="true"]{box-shadow:0 0 0 1px rgba(255,255,255,.5) inset,0 0 22px rgba(255,255,255,.22)}
+
+/* invert — a dot that lights up when the ink flips */
+.inv__dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.35;transition:opacity .3s,box-shadow .3s}
+.ctl__inv[aria-pressed="true"] .inv__dot{opacity:1;box-shadow:0 0 10px currentColor}
+
+/* music — a spinning chrome ring around a live equaliser */
+.ctl__music::before{
+  content:'';position:absolute;inset:-3px;border-radius:999px;padding:1px;
+  background:conic-gradient(from var(--spin),transparent 0 72%,rgba(255,255,255,.9) 86%,transparent 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+          mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:spin-cw 3.2s linear infinite;
+  opacity:.85;pointer-events:none;
+}
+.ctl__music[aria-pressed="false"]::before{opacity:.18;animation-play-state:paused}
+.music__eq{display:flex;align-items:flex-end;gap:3px;height:11px}
+.music__eq i{width:3px;background:currentColor;transform:scaleY(.35);transform-origin:bottom}
+.music__eq i:nth-child(1){height:40%}
+.music__eq i:nth-child(2){height:85%}
+.music__eq i:nth-child(3){height:100%}
+.music__eq i:nth-child(4){height:70%}
+.music__eq i:nth-child(5){height:50%}
+.ctl__music[aria-pressed="true"] .music__eq i{animation:eq .95s ease-in-out infinite}
+.ctl__music[aria-pressed="true"] .music__eq i:nth-child(2){animation-delay:.12s}
+.ctl__music[aria-pressed="true"] .music__eq i:nth-child(3){animation-delay:.24s}
+.ctl__music[aria-pressed="true"] .music__eq i:nth-child(4){animation-delay:.36s}
+.ctl__music[aria-pressed="true"] .music__eq i:nth-child(5){animation-delay:.48s}
+@keyframes eq{0%,100%{transform:scaleY(.32)}50%{transform:scaleY(1)}}
+.music__word b{font-weight:400}
+.music__word [data-on]{display:none}
+.music__word [data-off]{display:inline}
+.ctl__music[aria-pressed="true"] .music__word [data-on]{display:inline}
+.ctl__music[aria-pressed="true"] .music__word [data-off]{display:none}
+
+/* film grain — a whisper of noise over the whole screen */
+body::after{
+  content:'';position:fixed;inset:0;z-index:88;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 
 /* ============ COMP STAGE ============
    COVER, not contain: the comps are full-bleed, so on a window wider than 16:9
@@ -178,11 +224,39 @@ body.is-invert .boot{--el-inv:1}
 @keyframes spin-cw {to{--spin:360deg}}
 @keyframes spin-ccw{to{--spin:-360deg}}
 .el--dice  {left:32.45%;top:19.26%;width:35.10%}
-.lay--azuka{left:50%;top:43.0%;transform:translate(-50%,var(--ty,0));font-size:4cqw;font-style:italic;white-space:nowrap}
+/* the name — chrome gradient fill, a sheen sweeping across, a pulsing glow,
+   and two chromatic ghosts (cyan/magenta) flickering behind it, Y2K-style */
+.lay--azuka{
+  left:50%;top:44%;transform:translate(-50%,var(--ty,0));
+  font-size:5.4cqw;font-style:italic;white-space:nowrap;letter-spacing:.02em;
+  background:linear-gradient(100deg,#f7f7f7 0%,#cfcfcf 26%,#fff 40%,#9c9c9c 54%,#fff 68%,#d9d9d9 82%,#f4f4f4 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:azka-sheen 7s linear infinite,azka-glow 3.6s ease-in-out infinite;
+}
+.lay--azuka::before,.lay--azuka::after{
+  content:attr(data-text);position:absolute;inset:0;pointer-events:none;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;opacity:.5;
+}
+.lay--azuka::before{background:linear-gradient(100deg,rgba(0,255,255,.85),rgba(0,255,255,.15));animation:azka-glitch-a 4.3s steps(1,end) infinite}
+.lay--azuka::after {background:linear-gradient(100deg,rgba(255,0,255,.85),rgba(255,0,255,.15));animation:azka-glitch-b 4.3s steps(1,end) infinite}
+.azuka__in{display:inline-block;animation:azka-pop .8s var(--ease) .35s both}
+@keyframes azka-sheen{0%{background-position:220% 0}100%{background-position:-120% 0}}
+@keyframes azka-glow{
+  0%,100%{text-shadow:0 0 14px color-mix(in srgb,currentColor 32%,transparent),0 2px 0 color-mix(in srgb,currentColor 20%,transparent)}
+  50%{text-shadow:0 0 34px color-mix(in srgb,currentColor 62%,transparent),0 2px 0 color-mix(in srgb,currentColor 26%,transparent)}
+}
+@keyframes azka-pop{from{opacity:0;transform:translateY(16px) scale(.7);filter:blur(10px)}to{opacity:1;transform:none;filter:none}}
+@keyframes azka-glitch-a{0%,86%,100%{transform:translate(-3px,0)}88%{transform:translate(-7px,2px)}92%{transform:translate(-1px,-2px)}94%{transform:translate(-4px,1px)}}
+@keyframes azka-glitch-b{0%,86%,100%{transform:translate(3px,0)}88%{transform:translate(7px,-2px)}92%{transform:translate(1px,2px)}94%{transform:translate(4px,-1px)}}
 
 .cue{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:6;padding:.6rem}
 .cue i{display:block;width:1px;height:34px;background:currentColor;opacity:.3;position:relative;overflow:hidden}
 .cue i::after{content:'';position:absolute;inset:0;background:currentColor;animation:sd 2s cubic-bezier(.65,0,.35,1) infinite}
+.cue i{transition:opacity .3s,box-shadow .3s}
+.cue:hover i{opacity:.95;box-shadow:0 0 14px currentColor}
 @keyframes sd{0%{transform:translateY(-100%)}60%,100%{transform:translateY(100%)}}
 
 /* ---- 02 work ---- */
@@ -230,12 +304,13 @@ body.is-invert .boot{--el-inv:1}
   border:1px solid currentColor;font-size:1rem;line-height:1;
   transition:background .25s,color .25s,transform .4s var(--ease);
 }
-.rail__open:hover{background:var(--on-dark);color:var(--dark);transform:translate(2px,-2px)}
+.rail__open:hover{background:var(--on-dark);color:var(--dark);transform:translate(3px,-3px) scale(1.06);box-shadow:5px 5px 0 color-mix(in srgb,var(--on-dark) 30%,transparent)}
 .rail.is-swap b{animation:flick .3s steps(2) both}
 @keyframes flick{0%{opacity:0}50%,100%{opacity:1}}
 
 .keys{position:absolute;right:var(--gutter);bottom:clamp(1.6rem,5vh,3.2rem);z-index:6;display:flex;gap:.3rem;color:var(--on-dark)}
-kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opacity:.45;padding:.1rem .35rem;min-width:24px;text-align:center}
+kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opacity:.45;padding:.1rem .35rem;min-width:24px;text-align:center;transition:opacity .25s,box-shadow .25s,transform .25s}
+kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor}
 
 /* ---- 03 about ---- */
 .about{height:100svh;display:grid;place-items:center}
@@ -266,6 +341,9 @@ kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opaci
 .lay--icons img{width:100%;transition:transform .4s var(--ease)}
 .lay--icons a:first-child{width:3.70cqw}
 .lay--icons a:last-child{width:3.02cqw}
+.lay--icons a{position:relative;transition:transform .35s var(--ease),filter .35s}
+.lay--icons a:hover{transform:translateY(-6px) scale(1.15);filter:drop-shadow(0 0 16px color-mix(in srgb,currentColor 55%,transparent))}
+.lay--icons a:active{transform:translateY(-2px) scale(1.05)}
 .lay--icons a:hover img{transform:translateY(-4px)}
 .icons__ig,body.is-invert .icons__ig{filter:none}   /* the IG mark keeps its colour */
 
@@ -343,7 +421,7 @@ kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opaci
      of the screen on every phone — width-sized art moves vertically as the
      aspect changes, which is what put the type on top of it */
   .el--dice{width:auto;height:32cqh;left:calc(50cqw - 16.24cqh);top:20cqh}
-  .lay--azuka{top:57cqh;font-size:11cqw;left:50%;transform:translate(-50%,var(--ty,0));white-space:nowrap}
+  .lay--azuka{top:57cqh;font-size:12cqw;left:50%;transform:translate(-50%,var(--ty,0));white-space:nowrap}
 
   /* 03 about */
   .lay--abouth{left:50%;top:14%;transform:translate(-50%,var(--ty,0));font-size:7.5cqw}
@@ -384,5 +462,8 @@ kbd{font-family:var(--f-vcr);font-size:.8rem;border:1px solid currentColor;opaci
   .el.rev,.el.rev.is-shown{opacity:1;filter:invert(var(--el-inv));transition:none}
   .el,.lay{--ty:0 !important}
   [data-rise]{opacity:1;transform:none;filter:none;transition:none}
-  .lay--icons img,.rail__open,.ctl__b::after{transition:none}
+  .lay--icons img,.rail__open{transition:none}
+  .ctl__music::before,.music__eq i,.lay--azuka,.lay--azuka::before,.lay--azuka::after,.azuka__in{animation:none !important}
+  .lay--azuka{text-shadow:none}
+  .lay--icons a,.ctl__b{transition:none}
 }
