@@ -135,6 +135,9 @@ body.is-invert .boot{--el-inv:1}
 .boot__bar{width:min(230px,44vw);height:3px;background:currentColor;opacity:.18;position:relative;overflow:hidden}
 .boot__bar span{position:absolute;inset:0 100% 0 0;background:var(--on-light);transition:right .16s linear}
 .boot__pct{font-family:var(--f-vcr);font-size:.95rem;letter-spacing:.14em;color:var(--on-light);opacity:.6}
+.boot__log{width:min(250px,46vw);font-family:var(--f-vcr);font-size:.74rem;letter-spacing:.08em;line-height:1.7;color:var(--on-light);opacity:.72}
+.boot__log div{opacity:0;transform:translateY(4px);transition:opacity .16s,transform .16s}
+.boot__log div.on{opacity:1;transform:none}
 
 /* ============ FIXED CONTROLS ============ */
 .ctl{
@@ -637,6 +640,53 @@ html.has-cur .cur.is-on{opacity:1}
   width:min(220px,34vw);height:46px;opacity:.95;
 }
 
+/* ============ CHRONO — a live VCR clock and a fake hit counter, top-left ===== */
+.chrono{
+  position:fixed;left:calc(var(--gutter) + 1.3rem);top:calc(var(--gutter) + .6rem);z-index:90;
+  font-family:var(--f-vcr);font-size:.72rem;letter-spacing:.24em;line-height:2;
+  color:color-mix(in srgb,var(--on-dark) 55%,transparent);pointer-events:none;
+}
+.chrono span{display:block;white-space:nowrap}
+#chronoTime::after{content:'';display:inline-block;width:.5em;height:1em;margin-left:.35em;background:currentColor;vertical-align:-.16em;animation:blink 1.1s steps(1) infinite}
+#chronoHits{opacity:.65}
+
+/* ============ SCROLL PROGRESS — a 2px ink line hugging the bottom edge ======== */
+.progress{
+  position:fixed;left:0;bottom:0;width:100%;height:2px;z-index:93;
+  background:color-mix(in srgb,var(--on-dark) 80%,transparent);
+  transform-origin:left;transform:scaleX(0);pointer-events:none;
+  mix-blend-mode:difference;
+}
+
+/* ============ CURSOR SPARKS — little glyphs fly off a fast-moving cursor ===== */
+.spark{
+  position:fixed;z-index:9992;width:4px;height:4px;background:#fff;
+  pointer-events:none;mix-blend-mode:difference;
+  animation:spark .5s ease-out forwards;
+}
+@keyframes spark{
+  0%{opacity:1;transform:translate(0,0) scale(1) rotate(45deg)}
+  100%{opacity:0;transform:translate(var(--sx,0),var(--sy,-14px)) scale(.2) rotate(45deg)}
+}
+
+/* ============ GLITCH TICKS — the whole page jolts for a frame every so often = */
+body.g-tick main{animation:microglitch .2s steps(3) both}
+@keyframes microglitch{
+  0%{transform:translateX(0)}
+  30%{transform:translateX(-3px) skewX(-1.2deg)}
+  60%{transform:translateX(2px) skewX(.8deg)}
+  100%{transform:translateX(0) skewX(0)}
+}
+body.g-egg main{animation:eggglitch .85s steps(5) both}
+@keyframes eggglitch{
+  0%{transform:translateX(0);opacity:1}
+  20%{transform:translateX(-6px) skewX(-2deg);opacity:.6}
+  40%{transform:translateX(5px) skewX(1.6deg);opacity:1}
+  60%{transform:translateX(-3px) skewX(-1deg)}
+  80%{transform:translateX(3px) skewX(.8deg)}
+  100%{transform:none;opacity:1}
+}
+
 /* ============ REDUCED MOTION ============ */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -659,4 +709,7 @@ html.has-cur .cur.is-on{opacity:1}
   .cur__ring,.cur__trail,.cur__core,.rip{transition:none}
   .cur__ring{opacity:0}
   .rip.is-go{animation-duration:.01s;opacity:0}
+  .boot__log div{transition:none}
+  #chronoTime::after{animation:none}
+  body.g-tick main,body.g-egg main{animation:none}
 }

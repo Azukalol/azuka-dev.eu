@@ -9,7 +9,7 @@
 <meta property="og:image" content="assets/works/goon01.jpg" />
 <meta name="theme-color" content="#ffffff" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23fff'/%3E%3Ctext x='16' y='23' font-family='Helvetica,Arial' font-size='20' font-style='italic' text-anchor='middle' fill='%23000'%3Ea%3C/text%3E%3C/svg%3E" />
-<link rel="stylesheet" href="css/style.css?v=9" />
+<link rel="stylesheet" href="css/style.css?v=10" />
 </head>
 <body class="is-booting">
 
@@ -26,6 +26,7 @@
   <img src="assets/el/swag.png" alt="" class="boot__img" />
   <div class="boot__bar"><span id="bootFill"></span></div>
   <div class="boot__pct" id="bootPct">000</div>
+  <div class="boot__log" id="bootLog" aria-hidden="true"></div>
 </div>
 
 <div class="ctl">
@@ -46,6 +47,11 @@
   <i class="cur__core"></i><i class="cur__ring"></i><i class="cur__trail"></i>
 </div>
 <canvas id="viz" class="viz" aria-hidden="true"></canvas>
+<div class="chrono" id="chrono" aria-hidden="true">
+  <span id="chronoTime">00:00:00</span>
+  <span id="chronoHits">HITS 000000</span>
+</div>
+<div class="progress" id="progress" aria-hidden="true"></div>
 
 <main id="top">
 
@@ -139,10 +145,10 @@
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
 } }
 </script>
-<script src="js/data.js?v=9"></script>
-<script src="js/contours.js?v=9"></script>
-<script src="js/main.js?v=9"></script>
-<script src="js/track.js?v=9"></script>
-<script type="module" src="js/psp.js?v=9"></script>
+<script src="js/data.js?v=10"></script>
+<script src="js/contours.js?v=10"></script>
+<script src="js/main.js?v=10"></script>
+<script src="js/track.js?v=10"></script>
+<script type="module" src="js/psp.js?v=10"></script>
 </body>
 </html>

@@ -68,6 +68,29 @@
   requestAnimationFrame(tickPct);
   setTimeout(crawl, reduce ? 0 : 200);
 
+  /* terminal-style boot log — lines decrypt in one by one while the bar fills */
+  var bootLog = document.getElementById('bootLog');
+  var LOG_LINES = [
+    'SHUTTERKIF OS v2.0.1 — BOOT',
+    'mount //AZUKA',
+    'decode glyph set · 8bit',
+    'calibrate rgb[ ]',
+    'link vcr · 24fps',
+    'pull focus',
+    'roll.'
+  ];
+  var logIdx = 0;
+  function bootLogLine() {
+    if (!bootLog || logIdx >= LOG_LINES.length || bootDone) return;
+    var d = document.createElement('div');
+    d.textContent = '> ' + LOG_LINES[logIdx];
+    bootLog.appendChild(d);
+    requestAnimationFrame(function () { d.classList.add('on'); });
+    logIdx++;
+    if (logIdx < LOG_LINES.length) setTimeout(bootLogLine, 380);
+  }
+  if (bootLog && !reduce) setTimeout(bootLogLine, 300);
+
   /* ---------------------------------------------------------- */
   /* AUDIO — on by default, remembered per session                */
   /*                                                              */
@@ -489,10 +512,20 @@
     var curTrail = cur.querySelector('.cur__trail');
     var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
     var tx = cx, ty = cy;
+    var px = cx, py = cy, lastSpark = 0;
     window.addEventListener('pointermove', function (e) {
       cx = e.clientX; cy = e.clientY;
       cur.classList.add('is-on');
       cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
+      if (!reduce) {
+        var dist = Math.abs(cx - px) + Math.abs(cy - py);
+        var now = performance.now();
+        if (dist > 22 && now - lastSpark > 70) {
+          lastSpark = now;
+          spawnSpark(cx, cy, dist * 0.7);
+        }
+        px = cx; py = cy;
+      }
     }, { passive: true });
     window.addEventListener('pointerdown', function () { cur.classList.add('is-down'); });
     window.addEventListener('pointerup', function () { cur.classList.remove('is-down'); });
@@ -514,6 +547,22 @@
   }
 
   /* ---------------------------------------------------------- */
+  /* CURSOR SPARKS — glyphs fly off a fast-moving cursor          */
+  /* ---------------------------------------------------------- */
+  function spawnSpark(x, y, power) {
+    var s = document.createElement('i');
+    s.className = 'spark';
+    s.style.left = (x - 2) + 'px';
+    s.style.top = (y - 2) + 'px';
+    var ang = Math.random() * Math.PI * 2;
+    var d = (power || 14) * (0.6 + Math.random());
+    s.style.setProperty('--sx', (Math.cos(ang) * d).toFixed(1) + 'px');
+    s.style.setProperty('--sy', (Math.sin(ang) * d - 8).toFixed(1) + 'px');
+    document.body.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
+  }
+
+  /* ---------------------------------------------------------- */
   /* CLICK RIPPLE — a small ring pulses out from every click.     */
   /* ---------------------------------------------------------- */
   if (fine && !reduce) {
@@ -528,4 +577,65 @@
       r.addEventListener('animationend', function () { r.remove(); });
     });
   }
+
+  /* ---------------------------------------------------------- */
+  /* CHRONO — VCR clock + fake hit counter, top-left              */
+  /* ---------------------------------------------------------- */
+  var timeEl = document.getElementById('chronoTime');
+  var hitsEl = document.getElementById('chronoHits');
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function tickClock() {
+    if (timeEl) {
+      var d = new Date();
+      timeEl.textContent = pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+      setTimeout(tickClock, 1000);
+    }
+  }
+  tickClock();
+  if (hitsEl) {
+    var hits = 1;
+    try { hits = (parseInt(localStorage.getItem('sk_hits'), 10) || 0) + 1; localStorage.setItem('sk_hits', String(hits)); } catch (e) {}
+    hitsEl.textContent = 'HITS ' + String(1240 + hits + Math.floor(Math.random() * 5)).padStart(6, '0');
+  }
+
+  /* ---------------------------------------------------------- */
+  /* SCROLL PROGRESS — the ink line hugging the bottom edge       */
+  /* ---------------------------------------------------------- */
+  var prog = document.getElementById('progress');
+  function onProg() {
+    if (!prog) return;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    prog.style.transform = 'scaleX(' + (h > 0 ? Math.min(1, window.scrollY / h) : 0) + ')';
+  }
+  window.addEventListener('scroll', onProg, { passive: true });
+  window.addEventListener('resize', onProg, { passive: true });
+  onProg();
+
+  /* ---------------------------------------------------------- */
+  /* AMBIENT GLITCH TICK — the page jolts for a frame every so    */
+  /* often, so it never quite looks still.                        */
+  /* ---------------------------------------------------------- */
+  if (!reduce) {
+    setInterval(function () {
+      if (document.hidden) return;
+      document.body.classList.add('g-tick');
+      setTimeout(function () { document.body.classList.remove('g-tick'); }, 240);
+    }, 15000);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* EASTER EGG — type "azuka" and the page glitches out in a     */
+  /* burst of glyphs.                                             */
+  /* ---------------------------------------------------------- */
+  var eggKey = '';
+  window.addEventListener('keydown', function (e) {
+    eggKey = (eggKey + e.key.toLowerCase()).slice(-5);
+    if (eggKey === 'azuka' && !reduce) {
+      eggKey = '';
+      document.body.classList.add('g-egg');
+      var ex = window.innerWidth / 2, ey = window.innerHeight / 3;
+      for (var i = 0; i < 26; i++) spawnSpark(ex + (Math.random() - 0.5) * 240, ey + (Math.random() - 0.5) * 160, 26);
+      setTimeout(function () { document.body.classList.remove('g-egg'); }, 900);
+    }
+  });
 })();
