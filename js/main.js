@@ -621,8 +621,8 @@
 
   /* ---------------------------------------------------------- */
   /* CONTACT SHEET — smooth drawer, no database. Submitting       */
-  /* opens WhatsApp with the message prefilled (wa.me deep link)  */
-  /* and emails a copy through FormSubmit's AJAX endpoint.        */
+  /* emails the request straight to the owner through FormSubmit's */
+  /* AJAX endpoint — no public phone number anywhere.              */
   /* ---------------------------------------------------------- */
   var cta = document.getElementById('ctaOpen');
   var sheet = document.getElementById('sheet');
@@ -630,14 +630,6 @@
   var sheetClose = document.getElementById('sheetClose');
   var sheetForm = document.getElementById('contactForm');
   var sheetOk = document.getElementById('sheetOk');
-  /* the number stays out of plain sight — hex-encoded and decoded at runtime,
-     so view-source and the Elements panel never show the digits */
-  function dehex(s) {
-    var o = '';
-    for (var i = 0; i < s.length; i += 2) o += String.fromCharCode(parseInt(s.substr(i, 2), 16));
-    return o;
-  }
-  var WHATSAPP_NR = dehex('34393135323235343838373237');
 
   function openSheet() {
     if (!sheet || !dim) return;
@@ -667,7 +659,6 @@
       var email = String(fd.get('email') || '').trim();
       var datum = String(fd.get('datum') || '').trim();
       var msg = 'AZUKA CONTACT\n\nname: ' + name + '\nzweck: ' + zweck + '\nemail: ' + email + '\ndatum: ' + datum;
-      window.open('https://wa.me/' + WHATSAPP_NR + '?text=' + encodeURIComponent(msg), '_blank');
       try {
         fetch('https://formsubmit.co/ajax/azukakun8@gmail.com', {
           method: 'POST',

@@ -688,8 +688,8 @@ body.g-egg main{animation:eggglitch .85s steps(5) both}
 }
 
 /* ============ CTA + CONTACT SHEET — the get-in-touch button unfolds a smooth
-   drawer with a no-database form. Submission opens WhatsApp with the message
-   prefilled and POSTs a copy to FormSubmit, which emails it. ================= */
+   drawer with a no-database form. Submission emails the request to the owner
+   through FormSubmit's AJAX endpoint — no public phone number. ============= */
 .cta{
   position:absolute;left:50%;bottom:5.5svh;transform:translateX(-50%);z-index:8;
   font-family:var(--f-vcr);font-size:.8rem;letter-spacing:.3em;text-transform:uppercase;
