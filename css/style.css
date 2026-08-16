@@ -607,6 +607,36 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   .spine{display:none}
 }
 
+/* ============ CURSOR — a Y2K diamond cursor with a ring that opens on
+   interactive targets and a faint ghost that lags a beat behind. Pure chrome,
+   never interactive, always difference-blended so it flips over any ink. ====== */
+.cur{position:fixed;left:0;top:0;z-index:9990;pointer-events:none;mix-blend-mode:difference;opacity:0}
+html.has-cur .cur.is-on{opacity:1}
+.cur i{position:absolute;left:0;top:0;display:block}
+.cur__core{width:12px;height:12px;margin-left:-6px;margin-top:-6px}
+.cur__core::before{content:'';position:absolute;inset:0;background:#fff;transform:rotate(45deg);transition:transform .18s var(--ease)}
+.cur__ring{width:30px;height:30px;margin-left:-15px;margin-top:-15px;border:1px solid rgba(255,255,255,.55);border-radius:50%;opacity:0;transform:scale(.35);transition:transform .22s var(--ease),opacity .22s}
+.cur__trail{width:24px;height:24px;margin-left:-12px;margin-top:-12px;border:1px solid rgba(255,255,255,.35);border-radius:50%}
+.cur.is-down .cur__core::before{transform:rotate(45deg) scale(.62)}
+.cur.is-hov .cur__ring{opacity:1;transform:scale(1)}
+@media (hover:hover) and (pointer:fine){
+  html.has-cur *{cursor:none !important}
+}
+
+/* ============ CLICK RIPPLE ============ */
+.rip{position:fixed;left:0;top:0;z-index:9991;width:12px;height:12px;margin-left:-6px;margin-top:-6px;border:1.5px solid rgba(255,255,255,.85);border-radius:50%;pointer-events:none;mix-blend-mode:difference;opacity:0;transform:scale(.4)}
+.rip.is-go{animation:rip .55s var(--ease) forwards}
+@keyframes rip{0%{opacity:.85;transform:scale(.4)}100%{opacity:0;transform:scale(15)}}
+
+/* ============ MUSIC VISUALIZER — a live EQ meter bottom-left, fed by the
+   actual track through WebAudio once a gesture has unlocked the context.
+   Difference-blended, so it reads white on black and inverts on white. ======= */
+.viz{
+  position:fixed;left:var(--gutter);bottom:calc(var(--gutter) + 1.1rem);z-index:88;
+  pointer-events:none;mix-blend-mode:difference;
+  width:min(220px,34vw);height:46px;opacity:.95;
+}
+
 /* ============ REDUCED MOTION ============ */
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
@@ -626,4 +656,7 @@ kbd:hover{opacity:.95;transform:translateY(-1px);box-shadow:0 0 8px currentColor
   .frame__scan{display:none}
   .badge,.spk,.meta__caret{opacity:.9}
   .meta__caret{animation:none}
+  .cur__ring,.cur__trail,.cur__core,.rip{transition:none}
+  .cur__ring{opacity:0}
+  .rip.is-go{animation-duration:.01s;opacity:0}
 }

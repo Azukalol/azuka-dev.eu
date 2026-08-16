@@ -108,6 +108,27 @@
 
   function applyVol() { if (audio) audio.volume = getVol(); }
 
+  /* WebAudio hook for the visualizer — the track keeps playing untouched, we
+     just tap the frequency spectrum through an analyser. The AudioContext is
+     only ever created inside a real gesture, so it can always start. */
+  var ACtx = null, analyser = null, freq = null;
+  function bootViz() {
+    if (ACtx || !audio) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      ACtx = new AC();
+      var src = ACtx.createMediaElementSource(audio);
+      analyser = ACtx.createAnalyser();
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.85;
+      src.connect(analyser);
+      analyser.connect(ACtx.destination);
+      freq = new Uint8Array(analyser.frequencyBinCount);
+      if (ACtx.state === 'suspended') ACtx.resume().catch(function () {});
+    } catch (e) {}
+  }
+
   /* Muted playback is always allowed, so the track is set rolling silently
      from the very first frame and fully buffered by the time a real gesture
      arrives. Unmuting + resume can then never be refused by autoplay policy,
@@ -143,6 +164,7 @@
 
   var ARM = ['pointerdown', 'pointerup', 'click', 'keydown', 'touchstart', 'touchend', 'wheel', 'scroll'];
   function kick() {
+    bootViz();
     if (!wanted) { disarm(); return; }
     tryUnmute();
   }
@@ -378,9 +400,132 @@
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
+        if (en.isIntersecting) {
+          en.target.classList.add('is-in');
+          io.unobserve(en.target);
+          en.target.querySelectorAll('.lay--abouth, .lay--contact, .lay--me').forEach(scramble);
+        }
       });
     }, { threshold: 0.18 });
     document.querySelectorAll('.about, .contact').forEach(function (el) { io.observe(el); });
+  }
+
+  /* ---------------------------------------------------------- */
+  /* SCRAMBLE — headings decrypt themselves from glitch glyphs    */
+  /* the moment their section arrives. Text-content only, never    */
+  /* the name (its ::before/::after ghosts mirror its content).    */
+  /* ---------------------------------------------------------- */
+  var GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#*+<>/\\|;:!?$%&@';
+  function scramble(el) {
+    if (reduce || !el || !el.textContent) return;
+    var final = el.textContent, len = final.length;
+    if (!len) return;
+    var frame = 0, total = 20;
+    var timer = setInterval(function () {
+      frame++;
+      var out = '';
+      for (var i = 0; i < len; i++) {
+        var ch = final.charAt(i);
+        out += (ch === ' ' || frame >= total || (i / len) < (frame / total) * 1.2)
+          ? ch
+          : GLYPHS.charAt(Math.floor(Math.random() * GLYPHS.length));
+      }
+      el.textContent = out;
+      if (frame >= total) { clearInterval(timer); el.textContent = final; }
+    }, 34);
+  }
+
+  /* ---------------------------------------------------------- */
+  /* VISUALIZER — a live EQ meter bottom-left. Before a gesture   */
+  /* unlocks the WebAudio context it shows a calm idle shimmer;   */
+  /* once the analyser is live it rides the real frequency data.   */
+  /* ---------------------------------------------------------- */
+  var viz = document.getElementById('viz');
+  if (viz) {
+    var vctx = viz.getContext('2d');
+    var vt0 = performance.now();
+    function vizSize() {
+      var d = Math.min(window.devicePixelRatio || 1, 2);
+      var w = Math.min(220, window.innerWidth * 0.34), h = 46;
+      viz.width = Math.round(w * d); viz.height = Math.round(h * d);
+      viz.style.width = w + 'px'; viz.style.height = h + 'px';
+      vctx.setTransform(d, 0, 0, d, 0, 0);
+    }
+    vizSize();
+    window.addEventListener('resize', vizSize, { passive: true });
+    (function vizDraw() {
+      requestAnimationFrame(vizDraw);
+      var w = viz.width / (Math.min(window.devicePixelRatio || 1, 2));
+      var h = viz.height / (Math.min(window.devicePixelRatio || 1, 2));
+      var t = (performance.now() - vt0) / 1000;
+      vctx.clearRect(0, 0, w, h);
+      if (analyser && freq && live) analyser.getByteFrequencyData(freq);
+      var n = 24, gap = w / n, bw = gap * 0.6;
+      for (var i = 0; i < n; i++) {
+        var v = 0;
+        if (analyser && freq && live) {
+          v = freq[Math.floor((i + 0.5) * (freq.length / n))] / 255;
+          v = Math.pow(v, 1.6);
+        } else {
+          v = 0.10 + 0.09 * Math.abs(Math.sin(t * 1.4 + i * 0.55));
+        }
+        var bh = Math.max(2, v * (h - 2));
+        vctx.globalAlpha = 0.2 + v * 0.8;
+        vctx.fillStyle = '#fff';
+        vctx.fillRect(i * gap + (gap - bw) / 2, h - bh, bw, bh);
+      }
+      vctx.globalAlpha = 1;
+    })();
+  }
+
+  /* ---------------------------------------------------------- */
+  /* CURSOR — diamond core, opening ring on interactive targets,  */
+  /* ghost that lags a beat. Fine pointers only.                  */
+  /* ---------------------------------------------------------- */
+  var fine = window.matchMedia('(hover:hover) and (pointer:fine)').matches;
+  var cur = document.getElementById('cur');
+  if (fine && cur) {
+    document.documentElement.classList.add('has-cur');
+    var curTrail = cur.querySelector('.cur__trail');
+    var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    var tx = cx, ty = cy;
+    window.addEventListener('pointermove', function (e) {
+      cx = e.clientX; cy = e.clientY;
+      cur.classList.add('is-on');
+      cur.style.transform = 'translate(' + cx + 'px,' + cy + 'px)';
+    }, { passive: true });
+    window.addEventListener('pointerdown', function () { cur.classList.add('is-down'); });
+    window.addEventListener('pointerup', function () { cur.classList.remove('is-down'); });
+    document.addEventListener('mouseover', function (e) {
+      var el = e.target;
+      if (el && el.closest && el.closest('a,button,input,label,canvas,[data-nav],.rail__open')) cur.classList.add('is-hov');
+    });
+    document.addEventListener('mouseout', function (e) {
+      var el = e.target;
+      if (el && el.closest && el.closest('a,button,input,label,canvas,[data-nav],.rail__open')) cur.classList.remove('is-hov');
+    });
+    if (curTrail) {
+      (function trailLoop() {
+        tx += (cx - tx) * 0.14; ty += (cy - ty) * 0.14;
+        curTrail.style.transform = 'translate(' + (tx - cx).toFixed(1) + 'px,' + (ty - cy).toFixed(1) + 'px)';
+        requestAnimationFrame(trailLoop);
+      })();
+    }
+  }
+
+  /* ---------------------------------------------------------- */
+  /* CLICK RIPPLE — a small ring pulses out from every click.     */
+  /* ---------------------------------------------------------- */
+  if (fine && !reduce) {
+    document.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'touch') return;
+      var r = document.createElement('i');
+      r.className = 'rip';
+      r.style.left = e.clientX + 'px';
+      r.style.top = e.clientY + 'px';
+      document.body.appendChild(r);
+      requestAnimationFrame(function () { r.classList.add('is-go'); });
+      r.addEventListener('animationend', function () { r.remove(); });
+    });
   }
 })();
