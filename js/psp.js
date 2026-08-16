@@ -377,7 +377,7 @@ function init() {
     modelReady = true;
     if (loadingEl) loadingEl.classList.add('is-off');
     SK.fireReady();
-    select(0, true);
+    showHome();
     setTimeout(() => powerOn(), reduce ? 0 : 260);
   }
 
@@ -517,9 +517,35 @@ function init() {
   let current = 0;
   let powerT = 0, powerTarget = 0, warpT = 0;
   let live = null;              // the video currently on the glass, if any
+  let idleGif = null;           // the animated GIF shown on the glass until a reel is picked
+  let gifActive = true;         // when true the glass repaints the GIF every frame
 
   const srcW = (s) => (s && (s.videoWidth || s.width)) || 0;
   const srcH = (s) => (s && (s.videoHeight || s.height)) || 0;
+
+  /* The home screen: the animated GIF is the "image in the PSP". An <img>
+     holding an animated GIF keeps animating on its own, and drawImage reads
+     its current frame, so the render loop simply repaints it every frame.
+     A real selection takes the glass over and this stops. */
+  function showHome() {
+    if (idleGif) {
+      paintBackdrop(idleGif);
+      drawFrame(WORKS[current], idleGif);
+      updateSpill();
+      return;
+    }
+    const im = new Image();
+    im.onload = () => {
+      if (gifActive) {
+        idleGif = im;
+        paintBackdrop(im);
+        drawFrame(WORKS[current], im);
+        updateSpill();
+      }
+    };
+    im.onerror = () => select(0, true);   // GIF missing — fall back to the first reel
+    im.src = 'assets/works/screen.gif';
+  }
 
   /* The blurred bed behind the frame is expensive (a 34px blur over the whole
      screen) and it does not need to be live — it is baked from the poster once
@@ -625,6 +651,7 @@ function init() {
 
   async function select(i, instant) {
     current = ((i % WORKS.length) + WORKS.length) % WORKS.length;
+    gifActive = false;
     const w = WORKS[current];
 
     if (railIdx) railIdx.textContent = String(current + 1).padStart(2, '0');
@@ -924,9 +951,12 @@ function init() {
     } else pressLight.intensity = 0;
 
     /* the reel, if one is running — the only thing that repaints the glass
-       every frame; everything else on the screen only changes on selection */
+       every frame; the GIF home screen repaints too so it animates */
     if (live && !live.paused && !live.ended && live.readyState >= 2) {
       drawFrame(WORKS[current], live);
+      updateSpillThrottled(t);
+    } else if (gifActive && idleGif) {
+      drawFrame(WORKS[current], idleGif);
       updateSpillThrottled(t);
     }
 
@@ -936,6 +966,6 @@ function init() {
 
   /* keep the shader honest once VT323 has actually arrived */
   if (document.fonts && document.fonts.ready) {
-    document.fonts.ready.then(() => { if (modelReady) select(current, true); });
+    document.fonts.ready.then(() => { if (modelReady && !gifActive) select(current, true); });
   }
 }

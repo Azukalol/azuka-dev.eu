@@ -72,28 +72,30 @@
   /* AUDIO — on by default, remembered per session                */
   /*                                                              */
   /* Browsers will not let a page make noise before the visitor    */
-  /* has interacted with it. Two things follow, and the old code   */
-  /* got both wrong:                                              */
+  /* has interacted with it, so the music tries to start on load   */
+  /* and, when the browser refuses, rolls muted until the first    */
+  /* real gesture lifts the mute.                                 */
   /*                                                              */
   /*  1. `wheel` and `scroll` are NOT user-activation gestures.    */
   /*     This is a scroll-driven site, so the first thing almost   */
-  /*     every visitor does is scroll — the old arming used        */
-  /*     {once:true} and tore down the pointer/key listeners on    */
-  /*     the first wheel event, then called play(), which was      */
-  /*     refused and swallowed. One scroll killed the music for    */
-  /*     the whole visit, and no later click could revive it.      */
-  /*     So: never disarm except on confirmed success.             */
+  /*     every visitor does is scroll. The arming never disarms    */
+  /*     on a gesture that cannot grant activation — it just       */
+  /*     keeps listening until a click/keypress succeeds.          */
   /*                                                              */
   /*  2. MUTED playback is always allowed. So the track is set     */
   /*     rolling silently from the very first frame and is fully   */
   /*     buffered by the time a gesture arrives — the gesture      */
   /*     only has to unmute, which cannot fail on a load or a      */
   /*     network stall the way a cold play() can.                  */
+  /*                                                              */
+  /*  The whole thing only touches `muted` and `paused`; volume    */
+  /*  lives with the slider and is never zeroed as a mute trick,   */
+  /*  so nothing can randomly go silent or fight the slider.       */
   /* ---------------------------------------------------------- */
   var audio = document.getElementById('bgAudio');
   var btn = document.getElementById('soundToggle');
   var vol = document.getElementById('volSlider');
-  var wanted = false, fadeTimer = null, audible = false;
+  var wanted = false, live = false, armed = false;
 
   /* volume comes from the slider, remembered across visits */
   function getVol() {
@@ -102,78 +104,51 @@
     return Math.max(0, Math.min(1, v / 100));
   }
 
-  function fadeTo(target, done) {
-    if (!audio) return;
-    clearInterval(fadeTimer);
-    var step = (target - audio.volume) / 22;
-    fadeTimer = setInterval(function () {
-      var v = audio.volume + step;
-      if ((step > 0 && v >= target) || (step < 0 && v <= target) || step === 0) {
-        audio.volume = Math.max(0, Math.min(1, target));
-        clearInterval(fadeTimer);
-        done && done();
-      } else {
-        audio.volume = Math.max(0, Math.min(1, v));
-      }
-    }, 40);
-  }
-
   function reflect() { btn && btn.setAttribute('aria-pressed', wanted ? 'true' : 'false'); }
 
-  /* start it rolling with no sound — always permitted, and it warms the buffer */
-  function rollSilently() {
+  function applyVol() { if (audio) audio.volume = getVol(); }
+
+  /* Muted playback is always allowed, so the track is set rolling silently
+     from the very first frame and fully buffered by the time a real gesture
+     arrives. Unmuting + resume can then never be refused by autoplay policy,
+     and the only states involved are `muted` and `paused` — no volume=0, no
+     fades, no timestamp resets, nothing that can desync or randomly silence. */
+  function warm() {
     if (!audio) return;
     audio.muted = true;
-    audio.volume = 0;
+    applyVol();
     var p = audio.play();
     if (p && p.catch) p.catch(function () {});
   }
 
-  /* Try to actually make sound. Resolves true only if it worked.
+  function resume() {
+    if (!audio) return;
+    applyVol();
+    var p = audio.play();
+    if (p && p.catch) p.catch(function () {});
+  }
 
-     Single-flight, and that matters: a wheel and a scroll arrive back to back,
-     so two attempts overlap. The second would read `wasMuted` off an element
-     the first had already unmuted, then "restore" it to unmuted on failure —
-     leaving the track silent AND paused, with nothing left rolling. */
-  var inFlight = null;
-  function goAudible() {
-    if (!audio) return Promise.resolve(false);
-    if (audible) return Promise.resolve(true);
-    if (inFlight) return inFlight;
-
-    var wasMuted = audio.muted;
+  function tryUnmute() {
+    if (!audio || !wanted || live) return;
     audio.muted = false;
-    /* if it has been rolling silently the visitor has heard none of it, so
-       give them the top of the track rather than dropping them mid-phrase */
-    if (wasMuted) { try { audio.currentTime = 0; } catch (e) {} }
-    audio.volume = 0;
-
-    var p;
-    try { p = audio.play(); } catch (e) { p = null; }
-    var settle = function (ok) { inFlight = null; return ok; };
-    var win = function () { audible = true; fadeTo(getVol()); return settle(true); };
-    var lose = function () {
-      /* unmuting without activation makes Chrome pause it — put it back */
-      audio.muted = wasMuted;
-      if (wasMuted && audio.paused) rollSilently();
-      return settle(false);
-    };
-    if (!p || !p.then) return Promise.resolve(audio.paused ? lose() : win());
-    inFlight = p.then(win, lose);
-    return inFlight;
+    applyVol();
+    var p = audio.play();
+    if (p && p.then) {
+      p.then(function () { live = true; disarm(); }, function () {});
+    } else if (!audio.paused) {
+      live = true;
+      disarm();
+    }
   }
 
   var ARM = ['pointerdown', 'pointerup', 'click', 'keydown', 'touchstart', 'touchend', 'wheel', 'scroll'];
-  var armed = false;
   function kick() {
-    if (!wanted || audible) { disarm(); return; }
-    goAudible().then(function (ok) { if (ok) disarm(); });
+    if (!wanted) { disarm(); return; }
+    tryUnmute();
   }
   function arm() {
     if (armed || !audio) return;
     armed = true;
-    /* capture, passive, and NOT `once` — a wheel event that cannot grant
-       activation must be free to fail without costing us the next real click */
     ARM.forEach(function (t) { window.addEventListener(t, kick, { capture: true, passive: true }); });
   }
   function disarm() {
@@ -188,33 +163,37 @@
     reflect();
     try { sessionStorage.setItem('sk_sound', on ? '1' : '0'); } catch (e) {}
     if (on) {
-      goAudible().then(function (ok) { if (!ok) { rollSilently(); arm(); } });
+      /* the click is a real gesture — unmute and resume directly */
+      live = false;
+      audio.muted = false;
+      applyVol();
+      var p = audio.play();
+      if (p && p.then) p.then(function () { live = true; disarm(); }, function () { warm(); arm(); });
+      else { live = true; disarm(); }
     } else {
-      audible = false;
+      live = false;
       disarm();
-      fadeTo(0, function () { audio.pause(); });
+      audio.pause();
     }
   }
 
   if (btn) btn.addEventListener('click', function () { setSound(!wanted); });
 
-  /* the volume slider drives the volume live; dragging it up also turns the
-     sound on, dragging to zero mutes and parks the track */
+  /* the volume slider drives the volume live; dragging it up also resumes the
+     sound, dragging it to zero simply silences — the track keeps rolling */
   if (vol) {
     vol.addEventListener('input', function () {
       var v = getVol();
       try { localStorage.setItem('sk_vol', String(Math.round(v * 100))); } catch (e) {}
       if (!audio) return;
+      audio.volume = v;
       if (v > 0) {
-        audio.volume = v;
-        wanted = true;
-        reflect();
-        goAudible().then(function (ok) { if (!ok) { rollSilently(); arm(); } });
-      } else {
-        wanted = false;
-        reflect();
-        disarm();
-        fadeTo(0, function () { audio.pause(); });
+        if (!wanted) { wanted = true; reflect(); }
+        live = false;
+        audio.muted = false;
+        var p = audio.play();
+        if (p && p.then) p.then(function () { live = true; disarm(); }, function () { warm(); arm(); });
+        else { live = true; disarm(); }
       }
     });
   }
@@ -223,22 +202,34 @@
   document.addEventListener('visibilitychange', function () {
     if (!audio) return;
     if (document.hidden) { audio.pause(); }
-    else if (wanted) { var p = audio.play(); if (p && p.catch) p.catch(function () {}); }
+    else if (wanted) { resume(); }
   });
 
   var soundOnByDefault = true;
   try { if (sessionStorage.getItem('sk_sound') === '0') soundOnByDefault = false; } catch (e) {}
-  /* restore the remembered volume, then play straight away if allowed */
+  /* restore the remembered volume, then try to play with sound straight away */
   try { if (vol && localStorage.getItem('sk_vol')) vol.value = localStorage.getItem('sk_vol'); } catch (e) {}
 
   if (audio && soundOnByDefault) {
     wanted = true;
     reflect();
-    goAudible().then(function (ok) {
-      if (ok) return;          // high media engagement — it just plays
-      rollSilently();          // otherwise roll it muted and wait for a gesture
+    /* first a best-effort unmuted play (allowed on browsers that grant the
+       media engagement); if the browser refuses, it falls back to rolling
+       silently and the next real gesture lifts the mute */
+    live = false;
+    audio.muted = false;
+    applyVol();
+    var p0 = audio.play();
+    if (p0 && p0.then) {
+      p0.then(function () { live = true; }, function () { warm(); arm(); });
+    } else if (audio.paused) {
+      warm();
       arm();
-    });
+    } else {
+      live = true;
+    }
+  } else if (audio) {
+    warm();
   }
 
   /* ---------------------------------------------------------- */
