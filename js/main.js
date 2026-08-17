@@ -1012,17 +1012,21 @@
   });
   function closeCtx() { if (ctx) ctx.hidden = true; }
   if (ctx) {
-    ctx.addEventListener('click', function (e) {
-      var b = e.target;
-      if (b && b.dataset && b.dataset.a) {
-        if (b.dataset.a === 'load') { flash('LOADING DISC'); beep(523.25, 0.2, 'square', 0.05); }
-        else if (b.dataset.a === 'coin') { flash('INSERT COIN'); beep(660, 0.2, 'square', 0.05); }
-        else if (b.dataset.a === 'glitch') { vcrMode(); }
-      }
+    /* pointerdown instead of click: fires instantly, no 300 ms delay,
+       works with mouse AND touch, can't be swallowed by other handlers. */
+    ctx.addEventListener('pointerdown', function (e) {
+      e.preventDefault();                        /* kill the subsequent click */
+      var b = e.target.closest('[data-a]');
+      if (!b) return;
+      var a = b.dataset.a;
+      if (a === 'load')  { flash('LOADING DISC');  toast('LOADING DISC');  beep(523.25, 0.25, 'square', 0.06); }
+      else if (a === 'coin') { flash('INSERT COIN'); toast('INSERT COIN'); beep(660, 0.25, 'square', 0.06); }
+      else if (a === 'glitch') { vcrMode(); }
       closeCtx();
     });
+    ctx.addEventListener('click', function (e) { e.preventDefault(); closeCtx(); });
   }
-  window.addEventListener('click', closeCtx);
+  window.addEventListener('pointerdown', function (e) { if (!ctx || ctx.hidden) return; if (!ctx.contains(e.target)) closeCtx(); });
   window.addEventListener('scroll', closeCtx, { passive: true });
   window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCtx(); });
 
